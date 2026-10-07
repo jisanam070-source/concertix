@@ -1,0 +1,66 @@
+// Orchestrates a full crawl: every metro → per-metro JSON + index + summary.
+import { mkdir, writeFile, readFile } from "node:fs/promises";
+import { join } from "node:path";
+import { parseMetroPage } from "./parse.mjs";
+
+const FAILURE_THRESHOLD = 0.2;
+
+export async function crawlMetro(metro, fetchText, today) {
+  const first = parseMetroPage(await fetchText(metro.url));
+  const all = [...first.events];
+  for (let p = 2; p <= first.lastPage; p++) {
+    const { events } = parseMetroPage(await fetchText(`${metro.url}?page=${p}`));
+    if (events.length === 0) break;
+    all.push(...events);
+  }
+  const seen = new Set();
+  const events = all
+    .filter(e => e.date.slice(0, 10) >= today)
+    .filter(e => !seen.has(e.id) && seen.add(e.id))
+    .sort((a, b) => a.date.localeCompare(b.date));
+  return { events, metroName: first.metroName };
+}
+
+async function readPrevious(outDir, id) {
+  try { return JSON.parse(await readFile(join(outDir, "metros", `${id}.json`), "utf8")); } catch { return null; }
+}
+
+export async function syncMetros({ metros, fetchText, outDir, today, concurrency = 4, log = () => {} }) {
+  const metrosDir = join(outDir, "metros");
+  await mkdir(metrosDir, { recursive: true });
+  const updatedAt = new Date().toISOString();
+  const indexEntries = []; const failed = []; let ok = 0; let eventTotal = 0; let done = 0;
+
+  async function one(metro) {
+    try {
+      const { events, metroName } = await crawlMetro(metro, fetchText, today);
+      ok++;
+      if (events.length > 0) {
+        const name = metroName || metro.slug; const country = events[0].venue.country || "";
+        await writeFile(join(metrosDir, `${metro.id}.json`), JSON.stringify({ id: metro.id, slug: metro.slug, name, country, updatedAt, events }));
+        indexEntries.push({ id: metro.id, slug: metro.slug, name, country, count: events.length });
+        eventTotal += events.length;
+      }
+    } catch (e) {
+      failed.push({ id: metro.id, error: String(e.message || e) });
+      const prev = await readPrevious(outDir, metro.id);
+      if (prev && prev.events?.length) {
+        indexEntries.push({ id: prev.id, slug: prev.slug, name: prev.name, country: prev.country, count: prev.events.length });
+        eventTotal += prev.events.length;
+      }
+    }
+    if (++done % 100 === 0) log(`${done}/${metros.length} metros, ${eventTotal} events, ${failed.length} failed`);
+  }
+
+  const queue = [...metros];
+  await Promise.all(Array.from({ length: Math.max(1, concurrency) }, async () => {
+    while (queue.length) await one(queue.shift());
+  }));
+
+  const summary = { updatedAt, total: metros.length, ok, failed, events: eventTotal };
+  await writeFile(join(outDir, "summary.json"), JSON.stringify(summary, null, 2));
+  if (failed.length > FAILURE_THRESHOLD * metros.length) throw new Error(`Too many failures: ${failed.length} of ${metros.length}`);
+  indexEntries.sort((a, b) => b.count - a.count || a.id - b.id);
+  await writeFile(join(outDir, "index.json"), JSON.stringify({ updatedAt, metros: indexEntries }));
+  return summary;
+}
