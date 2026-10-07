@@ -235,7 +235,7 @@ test("empty page yields no events", () => {
 
 **Interfaces:**
 - Consumes: `listMetroAreas` (Task 2), `parseMetroPage` (Task 4), `createFetcher` (Task 1).
-- Produces: `syncMetros({ metros, fetchText, outDir, today, concurrency = 4, log = () => {} }) => Promise<{ total, ok, failed: Array<{id, error}>, events }>` and `crawlMetro(metro, fetchText) => Promise<{ events, metroName }>` (fetches page 1, then `?page=2..lastPage`, stops early on a page with zero events, dedupes by id, filters `date.slice(0,10) >= today`, sorts by `date`). Writes files as the spec defines:
+- Produces: `syncMetros({ metros, fetchText, outDir, today, concurrency = 4, log = () => {} }) => Promise<{ total, ok, failed: Array<{id, error}>, events }>` and `crawlMetro(metro, fetchText, today) => Promise<{ events, metroName }>` (fetches page 1, then `?page=2..lastPage`, stops early on a page with zero events, dedupes by id, filters `date.slice(0,10) >= today`, sorts by `date`). Writes files as the spec defines:
   - `outDir/metros/{id}.json` = `{ id, slug, name, country, updatedAt, events }` (only when `events.length > 0`)
   - `outDir/index.json` = `{ updatedAt, metros: [{ id, slug, name, country, count }] }` sorted by count desc
   - `outDir/summary.json` = `{ updatedAt, total, ok, failed, events }`
