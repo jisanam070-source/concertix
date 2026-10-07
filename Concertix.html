@@ -1,0 +1,658 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Concertix</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Plus+Jakarta+Sans:ital,wght@0,300..800;1,300..800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap" rel="stylesheet">
+<style>
+:root{
+  color-scheme:light;
+  --bg:#ffffff; --surface-low:#f7f7f5; --surface:#efefec; --surface-high:#e6e6e2; --card:#ffffff;
+  --ink:#1b1c19; --ink-2:#424843; --muted:#727973; --line:rgba(0,0,0,.09); --line-strong:#cfd1cd;
+  --heading:#032517; --accent:#9a8a28; --accent-hover:#ad9c33; --accent-soft:rgba(154,138,40,.16); --on-accent:#032517; --accent-text:#6e6219; --accent-display:#9a8a28;
+  --gold:#d4a373; --night:#23221e; --night-2:#1e2120; --night-ink:#faf9f4; --night-muted:#abcfb8;
+  --good:#2d4d3c; --warn:#7e5700; --bad:#ba1a1a;
+  --shadow:0 4px 16px -2px rgba(0,0,0,.06),0 12px 32px -4px rgba(0,0,0,.08);
+  --serif:"Playfair Display",Georgia,"Times New Roman",serif;
+  --sans:"Plus Jakarta Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --gutter:clamp(16px,4.4vw,56px);
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+h1,h2,h3,h4{font-family:var(--serif);color:var(--heading);margin:0;text-wrap:balance;line-height:1.1}
+p{margin:0}
+a{color:inherit;text-decoration:none}
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+.ms{font-family:"Material Symbols Outlined";font-weight:normal;font-style:normal;font-size:20px;line-height:1;display:inline-block;letter-spacing:normal;text-transform:none;white-space:nowrap;direction:ltr;-webkit-font-feature-settings:"liga";font-feature-settings:"liga";font-variation-settings:"FILL" 0,"wght" 400;flex-shrink:0}
+.wrap{max-width:1440px;margin:0 auto;padding-inline:var(--gutter)}
+.eyebrow{font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--accent-text);display:inline-flex;align-items:center;gap:8px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border-radius:999px;padding:10px 20px;font-size:13px;font-weight:700;letter-spacing:.02em;border:1px solid transparent;transition:background .2s,transform .2s,border-color .2s;white-space:nowrap}
+.btn-accent{background:#c25e1a;color:#ffffff;box-shadow:0 0 14px 2px rgba(194,94,26,.28),0 0 3px rgba(194,94,26,.5)}
+.btn-accent:hover{background:#d06a24;box-shadow:0 0 20px 4px rgba(194,94,26,.38),0 0 4px rgba(194,94,26,.6)}
+.btn-outline{border-color:var(--line-strong);background:transparent;color:var(--ink)}
+.btn-outline:hover{background:var(--surface)}
+.btn-ghost-light{border-color:rgba(249,248,243,.25);color:var(--night-ink);background:transparent}
+.btn-ghost-light:hover{background:rgba(249,248,243,.08)}
+
+/* Header */
+.site-header{position:sticky;top:env(safe-area-inset-top,0px);z-index:40;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-bottom:1px solid var(--line)}
+.site-header .wrap{height:76px;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:24px}
+.site-header .brand{justify-self:start}
+.header-actions{justify-self:end}
+@media (max-width:900px){.site-header .wrap{grid-template-columns:1fr auto}}
+.brand{display:flex;align-items:center;gap:10px}
+.brand-mark{display:block;width:36px;height:36px;flex-shrink:0}
+.brand-mark svg{display:block;transition:transform .5s ease}
+.brand:hover .brand-mark svg{transform:rotate(-20deg)}
+.brand-name{font-family:var(--serif);font-weight:700;font-size:26px;color:var(--heading);line-height:1;letter-spacing:-.01em;display:inline-block}
+.brand-name .bx{color:#c25e1a;font-style:italic}
+.brand-tag{font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--accent-text);display:block;margin-top:5px}
+.nav{display:flex;gap:36px;font-size:15px;font-weight:600;color:var(--ink-2)}
+.nav a{position:relative;padding-block:6px}
+.nav a:hover,.nav a.current{color:var(--heading)}
+.nav a.current::after{content:"";position:absolute;left:0;right:0;bottom:0;height:2px;border-radius:2px;background:var(--accent)}
+.header-actions{display:flex;gap:10px;align-items:center}
+.saved-btn{position:relative;width:40px;height:40px;border-radius:50%;border:1px solid var(--line-strong);background:transparent;display:grid;place-items:center}
+.saved-btn .count{position:absolute;top:-4px;right:-4px;min-width:18px;height:18px;border-radius:999px;background:var(--accent);color:var(--on-accent);font-size:10px;font-weight:800;display:grid;place-items:center;padding-inline:4px}
+@media (max-width:900px){.nav{display:none}.hide-sm{display:none}}
+
+/* Hero */
+.hero{position:relative;overflow:hidden;background:var(--surface-low);padding-block:clamp(48px,7vw,88px) clamp(40px,5vw,64px)}
+.hero-grid{position:relative;display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:48px;align-items:center}
+.stub{display:flex;background:var(--card);border-radius:22px;box-shadow:0 24px 48px -20px rgba(3,37,23,.35),0 2px 6px rgba(0,0,0,.05);overflow:hidden;transform:rotate(-2deg);transition:transform .5s cubic-bezier(.2,.8,.2,1)}
+.stub:hover{transform:rotate(0) translateY(-4px)}
+.stub-side{width:128px;flex-shrink:0;background:#f3ead8;color:#032517;display:flex;flex-direction:column;align-items:center;justify-content:space-between;padding:22px 0 18px;position:relative}
+.stub-side .mon{font-size:11px;font-weight:800;letter-spacing:.28em;color:#c25e1a}
+.stub-side .day{font-family:var(--serif);font-weight:700;font-size:64px;line-height:1;font-variant-numeric:lining-nums}
+.stub-side .wd{font-family:var(--serif);font-style:italic;font-size:16px;color:#6b5a45}
+.barcode{display:flex;gap:2px;height:26px;align-items:stretch;opacity:.85}
+.barcode i{background:#032517;display:block}
+.stub-body{flex:1;padding:24px 26px 22px;display:flex;flex-direction:column;gap:12px;position:relative;border-left:2px dashed var(--line-strong)}
+.stub-body::before,.stub-body::after{content:"";position:absolute;left:-12px;width:22px;height:22px;border-radius:50%;background:var(--surface-low)}
+.stub-body::before{top:-11px}.stub-body::after{bottom:-11px}
+.stub-top{display:flex;justify-content:space-between;align-items:center}
+.admit{font-size:10px;font-weight:800;letter-spacing:.2em;color:var(--muted);text-transform:uppercase}
+.stub h3{font-size:26px;line-height:1.1}
+.stub .meta{font-size:13px;color:var(--ink-2)}
+.countdown{display:flex;align-items:baseline;gap:6px;font-variant-numeric:tabular-nums;padding-top:12px;border-top:1px solid var(--line)}
+.countdown .u{display:flex;flex-direction:column;align-items:center;min-width:34px}
+.countdown b{font-family:var(--serif);font-size:26px;font-weight:600;color:var(--heading);line-height:1}
+.countdown small{font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:700;margin-top:4px}
+.countdown .colon{font-family:var(--serif);font-size:22px;color:var(--line-strong);align-self:flex-start}
+.stub .btn{align-self:flex-start;margin-top:4px}
+@media (max-width:900px){.hero-grid{grid-template-columns:1fr}.stub{transform:none;max-width:520px}}
+.hero h1{color:var(--heading);font-size:clamp(40px,6.2vw,76px);font-weight:700;letter-spacing:-.02em;line-height:1.04}
+.hero h1 em{color:#7a4a24;font-style:italic}
+.hero-lede{margin-top:20px;font-size:clamp(16px,1.5vw,19px);line-height:1.65;color:var(--ink-2);max-width:40em}
+.hero-stats{display:flex;flex-wrap:wrap;gap:32px;margin-top:32px}
+.hero-stats b{display:block;font-family:var(--serif);font-size:30px;color:var(--heading);font-variant-numeric:tabular-nums;line-height:1}
+.hero-stats span{font-size:12px;color:var(--muted);font-weight:600;letter-spacing:.04em}
+
+
+/* Search */
+.finder{position:relative;margin-top:44px;background:var(--bg);border-radius:32px;padding:clamp(14px,2vw,24px);box-shadow:var(--shadow);border:1px solid var(--line);display:flex;flex-direction:column;gap:18px}
+.fields{display:grid;grid-template-columns:4fr 3fr 3fr 2fr;gap:12px}
+.field{position:relative;display:flex;align-items:center}
+.field .ms{position:absolute;left:16px;color:var(--muted);pointer-events:none}
+.field .chev{left:auto;right:14px;font-size:18px}
+.field input,.field select{width:100%;padding:13px 38px 13px 46px;border-radius:999px;border:1px solid transparent;background:var(--surface-low);font-size:13.5px;appearance:none;-webkit-appearance:none;transition:border-color .2s,box-shadow .2s,background .2s}
+.field select{cursor:pointer}
+.field input::placeholder{color:var(--muted)}
+.field input:focus,.field select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 4px var(--accent-soft);background:var(--bg)}
+@media (max-width:960px){.fields{grid-template-columns:1fr 1fr}.fields .field:first-child{grid-column:1/-1}}
+@media (max-width:520px){.fields{grid-template-columns:1fr}}
+.pills{display:flex;gap:8px;overflow-x:auto;padding-bottom:2px;scrollbar-width:none}
+.pills::-webkit-scrollbar{display:none}
+.pill{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:999px;border:1px solid transparent;background:var(--surface);color:var(--ink-2);font-size:12.5px;font-weight:600;white-space:nowrap;transition:all .2s}
+.pill .ms{font-size:16px;color:var(--gold)}
+.pill:hover{background:var(--surface-high);color:var(--heading)}
+.pill[aria-pressed="true"]{background:#c25e1a;color:#ffffff;box-shadow:0 0 14px 2px rgba(194,94,26,.28),0 0 3px rgba(194,94,26,.5)}
+.pill[aria-pressed="true"] .n{opacity:.75}
+.pill[aria-pressed="true"] .ms{color:inherit}
+.pill .n{opacity:.7;font-variant-numeric:tabular-nums}
+
+
+
+/* Sections */
+section.block{padding-block:clamp(56px,7vw,96px)}
+.section-head{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:20px;margin-bottom:32px}
+.section-head h2{font-size:clamp(30px,3.6vw,44px);font-weight:600;letter-spacing:-.015em;margin-top:8px}
+.section-head p{color:var(--ink-2);max-width:36em;margin-top:8px}
+
+/* Spotlight */
+.spotlight{background:var(--night);border:1px solid var(--line);color:var(--night-ink);border-radius:40px;overflow:hidden;display:grid;grid-template-columns:1.05fr 1fr;min-height:440px}
+.spot-art{position:relative;min-height:320px}
+.spot-art svg{position:absolute;inset:0;width:100%;height:100%}
+.spot-art .badge{position:absolute;left:24px;top:24px}
+.spot-body{padding:clamp(28px,4vw,56px);display:flex;flex-direction:column;gap:18px}
+.spot-body h2{color:var(--night-ink);font-size:clamp(34px,4.4vw,56px);font-weight:700;letter-spacing:-.02em}
+.spot-body h2 em{color:var(--gold)}
+.spot-body p{color:rgba(249,248,243,.72);max-width:34em}
+.lineup{display:flex;flex-direction:column;border-top:1px solid rgba(249,248,243,.14)}
+.lineup div{display:flex;justify-content:space-between;gap:16px;padding-block:10px;border-bottom:1px solid rgba(249,248,243,.14);font-size:13.5px}
+.lineup span:last-child{color:var(--gold);font-variant-numeric:tabular-nums;font-weight:600}
+.spot-actions{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin-top:auto}
+.spot-actions .price{font-size:13px;color:rgba(249,248,243,.7)}
+.spot-actions .price b{font-family:var(--serif);font-size:26px;color:var(--night-ink);margin-left:4px}
+@media (max-width:900px){.spotlight{grid-template-columns:1fr;border-radius:28px}}
+
+.badge{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;font-size:10.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;background:rgba(20,20,18,.55);color:#faf9f4;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+.badge i{width:6px;height:6px;border-radius:50%;background:#9a8a28}
+
+/* Toolbar */
+.toolbar{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;margin-bottom:24px}
+.result-count{font-size:14px;color:var(--ink-2)}
+.result-count b{color:var(--heading);font-variant-numeric:tabular-nums}
+.tool-right{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.seg{display:inline-flex;background:var(--surface);border-radius:999px;padding:4px}
+.seg button{border:0;background:transparent;border-radius:999px;padding:7px 14px;font-size:12.5px;font-weight:600;color:var(--ink-2);display:inline-flex;align-items:center;gap:6px}
+.seg button[aria-pressed="true"]{background:var(--card);color:var(--heading);box-shadow:0 1px 4px rgba(0,0,0,.08)}
+.seg .ms{font-size:18px}
+.sort{position:relative}
+.sort select{appearance:none;-webkit-appearance:none;border:1px solid var(--line-strong);background:transparent;border-radius:999px;padding:8px 34px 8px 16px;font-size:12.5px;font-weight:600;cursor:pointer}
+.sort .ms{position:absolute;right:10px;top:50%;transform:translateY(-50%);font-size:18px;pointer-events:none;color:var(--muted)}
+
+/* Cards */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,300px),1fr));gap:24px}
+.card{display:flex;flex-direction:column;background:var(--card);border:1px solid var(--line);border-radius:28px;overflow:hidden;transition:transform .3s,box-shadow .3s;animation:rise .45s both}
+.card:hover{transform:translateY(-4px);box-shadow:var(--shadow)}
+@keyframes rise{from{transform:translateY(8px)}to{transform:none}}
+.card-art{position:relative;aspect-ratio:4/3;max-width:100%;overflow:hidden}
+.card-art svg{position:absolute;inset:0;width:100%;height:100%;transition:transform .6s}
+.card:hover .card-art svg{transform:scale(1.04)}
+.date-chip{position:absolute;left:16px;top:16px;background:var(--bg);color:var(--ink);border-radius:16px;padding:6px 12px;text-align:center;line-height:1.1;box-shadow:0 2px 10px rgba(0,0,0,.12)}
+.date-chip small{display:block;font-size:10px;font-weight:800;letter-spacing:.12em;color:var(--accent-text)}
+.date-chip b{font-family:var(--serif);font-size:24px;color:var(--heading)}
+.save{position:absolute;right:14px;top:14px;width:38px;height:38px;border-radius:50%;border:0;background:rgba(20,20,18,.5);color:#fff;display:grid;place-items:center;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);transition:background .2s}
+.save:hover{background:rgba(20,20,18,.7)}
+.save[aria-pressed="true"] .ms{font-variation-settings:"FILL" 1;color:#d4a373}
+.card-art .badge{position:absolute;left:16px;bottom:16px}
+.card-body{padding:20px 22px 22px;display:flex;flex-direction:column;gap:8px;flex:1}
+.genre-tag{font-size:10.5px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.card h3{font-size:22px;font-weight:600}
+.card .support{font-size:13px;color:var(--ink-2);font-style:italic;font-family:var(--serif)}
+.card .where{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--ink-2)}
+.card .where .ms{font-size:17px;color:var(--gold)}
+.card-foot{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:auto;padding-top:14px;border-top:1px solid var(--line)}
+.from{font-size:11px;color:var(--muted);font-weight:600;letter-spacing:.04em}
+.from b{display:block;font-family:var(--serif);font-size:22px;color:var(--heading);letter-spacing:0;font-variant-numeric:tabular-nums}
+.avail{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:700}
+.avail i{width:7px;height:7px;border-radius:50%;background:currentColor}
+.avail.ok{color:var(--good)}.avail.fast{color:var(--warn)}.avail.out{color:var(--bad)}
+
+/* Agenda */
+.agenda{display:flex;flex-direction:column;gap:36px}
+.agenda h3.month{font-size:26px;font-style:italic;color:var(--accent-display);margin-bottom:8px}
+.row{display:grid;grid-template-columns:84px minmax(0,1fr) auto auto;gap:20px;align-items:center;padding:16px 0;border-bottom:1px solid var(--line)}
+.row .d{font-variant-numeric:tabular-nums;line-height:1.1}
+.row .d b{font-family:var(--serif);font-size:30px;color:var(--heading);display:block}
+.row .d small{font-size:11px;font-weight:700;letter-spacing:.1em;color:var(--muted);text-transform:uppercase}
+.row h4{font-size:20px;font-weight:600}
+.row .sub{font-size:13px;color:var(--ink-2)}
+.row .p{font-family:var(--serif);font-size:20px;color:var(--heading);font-variant-numeric:tabular-nums}
+@media (max-width:640px){.row{grid-template-columns:64px 1fr}.row .p{grid-column:2}.row .btn{grid-column:2;justify-self:start}}
+
+.empty{text-align:center;padding:64px 20px;border:1px dashed var(--line-strong);border-radius:28px;color:var(--ink-2)}
+.empty h3{font-size:26px;margin-bottom:8px}
+.empty .btn{margin-top:18px}
+
+/* Tours row */
+.tours-head{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:28px;flex-wrap:wrap}
+.tours-head h2{font-size:clamp(30px,3.6vw,44px);font-weight:600;letter-spacing:-.015em;margin-top:8px}
+.tour-nav{display:flex;gap:8px}
+.tour-nav button{width:42px;height:42px;border-radius:50%;border:1px solid var(--line-strong);background:var(--bg);display:grid;place-items:center;color:var(--heading);transition:border-color .2s}
+.tour-nav button:hover{border-color:var(--heading)}
+.tours{display:flex;gap:28px;overflow-x:auto;scroll-snap-type:x mandatory;scroll-behavior:smooth;padding:6px 2px 10px;scrollbar-width:none;-webkit-mask-image:linear-gradient(90deg,#000 90%,transparent);mask-image:linear-gradient(90deg,#000 90%,transparent)}
+.tours::-webkit-scrollbar{display:none}
+.tour{flex:0 0 auto;width:156px;scroll-snap-align:start;display:flex;flex-direction:column;align-items:center;gap:12px;text-align:center}
+.tour-disc{position:relative;width:156px;height:156px}
+.tour-open{width:100%;height:100%;border-radius:50%;border:0;padding:0;display:grid;place-items:center;font-family:var(--serif);font-weight:700;font-size:48px;letter-spacing:-.02em;transition:transform .35s cubic-bezier(.2,.8,.2,1),box-shadow .35s;box-shadow:inset 0 0 0 1px rgba(0,0,0,.05)}
+.tour-open i{font-style:italic;font-weight:500}
+.tour-disc:hover .tour-open{transform:scale(1.04);box-shadow:0 16px 30px -14px rgba(0,0,0,.35)}
+.t0{background:#032517;color:#f3ead8}.t1{background:#f3ead8;color:#032517}.t2{background:#c25e1a;color:#fff}.t3{background:#e4e9e3;color:#032517}.t4{background:#23221e;color:#d4a373}.t5{background:#ead9c8;color:#7a4a24}
+.star{position:absolute;top:4px;right:4px;width:40px;height:40px;border-radius:50%;border:0;background:rgba(255,255,255,.92);color:var(--heading);display:grid;place-items:center;box-shadow:0 2px 10px rgba(0,0,0,.12);transition:transform .2s}
+.star:hover{transform:scale(1.08)}
+.star[aria-pressed="true"]{background:#c25e1a;color:#fff}
+.star[aria-pressed="true"] .ms{font-variation-settings:"FILL" 1}
+.tour b{font-size:15px;font-weight:700;color:var(--heading);line-height:1.25}
+.tour small{font-size:12px;color:var(--muted);margin-top:-8px}
+
+/* Steps */
+.band{background:var(--surface-low)}
+.steps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px}
+@media (max-width:860px){.steps{grid-template-columns:1fr}}
+.step{padding:28px;border-radius:28px;background:var(--bg);border:1px solid var(--line);display:flex;flex-direction:column;gap:10px}
+.step .num{font-family:var(--serif);font-style:italic;font-size:40px;color:var(--accent-display);line-height:1}
+.step h3{font-size:22px}
+.step p{color:var(--ink-2);font-size:14px}
+
+/* FAQ */
+.faq-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.5fr);gap:48px}
+@media (max-width:860px){.faq-grid{grid-template-columns:1fr;gap:24px}}
+details{border-bottom:1px solid var(--line);padding-block:18px}
+summary{list-style:none;cursor:pointer;display:flex;justify-content:space-between;gap:16px;font-weight:700;font-size:15.5px;color:var(--heading)}
+summary::-webkit-details-marker{display:none}
+summary .ms{transition:transform .25s;color:var(--accent-text)}
+details[open] summary .ms{transform:rotate(45deg)}
+details p{margin-top:10px;color:var(--ink-2);max-width:60ch}
+
+/* Footer */
+footer{margin-top:clamp(40px,5vw,64px);background:var(--night);color:var(--night-ink)}
+.news{padding-block:48px;display:flex;flex-wrap:wrap;gap:28px;align-items:center;justify-content:space-between}
+.news h4{color:var(--night-ink);font-size:26px;margin-top:8px}
+.news p{color:var(--night-muted);font-size:13.5px;margin-top:6px;max-width:38em}
+.news .eyebrow{color:var(--gold)}
+.news form{display:flex;flex-wrap:wrap;gap:12px;flex:0 1 440px}
+.news input{flex:1 1 220px;min-width:0;padding:13px 20px;border-radius:999px;border:0;background:#faf9f4;color:#1b1c19;font-size:13.5px}
+.news input::placeholder{color:#727973}
+.legal{background:var(--night-2);border-top:1px solid rgba(249,248,243,.08)}
+.legal .wrap{padding-block:22px;display:flex;flex-wrap:wrap;gap:16px 24px;align-items:center;justify-content:space-between;font-size:12.5px;color:var(--night-muted)}
+.legal .chips{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.legal .chip{display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:999px;background:#333635;color:var(--gold);font-weight:600}
+.legal .chip i{width:6px;height:6px;border-radius:50%;background:var(--accent)}
+.legal .chip.g{color:#c7ebd4}.legal .chip.g i{background:#c7ebd4}
+.legal nav{display:flex;flex-wrap:wrap;gap:8px 22px;color:#c5c7c5}
+.legal nav a:hover{color:#fff}
+
+/* Modal */
+.modal{position:fixed;inset:0;z-index:60;background:rgba(20,21,19,.62);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);display:grid;place-items:center;padding:16px}
+.sheet{background:var(--bg);border-radius:32px;width:100%;max-width:480px;max-height:calc(100dvh - 32px);overflow:auto;box-shadow:0 30px 80px rgba(0,0,0,.35);animation:pop .3s ease-out}
+@keyframes pop{from{transform:translateY(16px) scale(.98)}to{transform:none}}
+.sheet-art{height:120px;position:relative}
+.sheet-art svg{position:absolute;inset:0;width:100%;height:100%}
+.sheet-close{position:absolute;right:14px;top:14px;width:36px;height:36px;border-radius:50%;border:0;background:rgba(20,20,18,.55);color:#fff;display:grid;place-items:center}
+.sheet-body{padding:24px 28px 28px;display:flex;flex-direction:column;gap:16px}
+.sheet-body h3{font-size:26px}
+.sheet-body .sub{color:var(--ink-2);font-size:13px;margin-top:4px}
+.tiers{display:flex;flex-direction:column;gap:8px;border:0;padding:0;margin:0}
+.tiers legend,.lbl{font-size:12px;font-weight:700;letter-spacing:.05em;color:var(--ink);margin-bottom:8px;padding:0}
+.tier{display:flex;align-items:center;gap:12px;padding:12px 16px;border-radius:16px;border:1px solid var(--line-strong);cursor:pointer;transition:border-color .2s,background .2s}
+.tier:has(input:checked){border-color:var(--accent);background:var(--accent-soft)}
+.tier input{accent-color:var(--accent);width:18px;height:18px;margin:0}
+.tier span{flex:1;font-size:13.5px;font-weight:600}
+.tier small{display:block;font-weight:400;color:var(--muted);font-size:12px}
+.tier b{font-variant-numeric:tabular-nums}
+.qty{display:flex;align-items:center;justify-content:space-between}
+.stepper{display:inline-flex;align-items:center;gap:4px;background:var(--surface);border-radius:999px;padding:4px}
+.stepper button{width:32px;height:32px;border-radius:50%;border:0;background:var(--card);display:grid;place-items:center}
+.stepper output{min-width:32px;text-align:center;font-weight:700;font-variant-numeric:tabular-nums}
+.sheet input[type=email],.sheet input[type=text]{width:100%;padding:12px 16px;border-radius:14px;border:1px solid transparent;background:var(--surface-low);font-size:13.5px}
+.sheet input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 4px var(--accent-soft)}
+.total{display:flex;justify-content:space-between;align-items:baseline;padding-top:14px;border-top:1px solid var(--line)}
+.total b{font-family:var(--serif);font-size:28px;color:var(--heading);font-variant-numeric:tabular-nums}
+.note{display:flex;gap:8px;font-size:12.5px;color:var(--ink-2);background:var(--surface-low);border-radius:14px;padding:10px 12px}
+.note .ms{font-size:18px;color:var(--good)}
+
+/* Toast */
+.toast{position:fixed;right:20px;bottom:calc(20px + env(safe-area-inset-bottom,0px));left:auto;z-index:70;max-width:calc(100% - 40px);background:var(--night);color:var(--night-ink);padding:14px 18px;border-radius:18px;display:flex;gap:12px;align-items:center;box-shadow:0 16px 40px rgba(0,0,0,.3);transform:translateY(140%);transition:transform .35s}
+.toast.show{transform:none}
+.toast .ms{color:#d4a373}
+.toast b{display:block;font-size:14px}
+.toast span{font-size:12.5px;color:var(--night-muted)}
+
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+</style>
+
+<header class="site-header">
+  <div class="wrap">
+    <a class="brand" href="#top" aria-label="Concertix home">
+      <span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 36 36" width="36" height="36"><path d="M27.5 9.2 A13 13 0 1 0 27.5 26.8" fill="none" stroke="var(--heading)" stroke-width="4.5" stroke-linecap="round"/><circle cx="29.5" cy="18" r="3.2" fill="#c25e1a"/></svg></span><span><span class="brand-name">Concerti<span class="bx">x</span></span><span class="brand-tag">Live Music &amp; Concerts</span></span>
+    </a>
+    <nav class="nav" aria-label="Main">
+      <a href="#shows" class="current">Concerts</a>
+      <a href="#shows">Festivals</a>
+      <a href="#tours">Artists</a>
+    </nav>
+    <div class="header-actions">
+      <button class="btn btn-outline hide-sm" type="button" data-toast="Seller onboarding opens in November.">Sell Tickets</button>
+      <button class="btn btn-accent" type="button" data-toast="Sign-in is not connected in this preview.">Sign In</button>
+    </div>
+  </div>
+</header>
+
+<main id="top">
+  <section class="hero">
+    <div class="wrap">
+      <div class="hero-grid">
+        <div>
+          <h1>Discover Live Music, <em>Concerts &amp; Tour&nbsp;Dates</em></h1>
+          <p class="hero-lede">Find tickets to upcoming gigs, intimate acoustic sets, stadium tours, jazz clubs, and indie festivals across your city.</p>
+        </div>
+        <article class="stub" aria-label="Next show">
+          <div class="stub-side">
+            <span class="mon" id="stubMon"></span>
+            <span class="day" id="stubDay"></span>
+            <span class="wd" id="stubWd"></span>
+            <span class="barcode" id="barcode" aria-hidden="true"></span>
+          </div>
+          <div class="stub-body">
+            <div class="stub-top"><span class="eyebrow">Next up</span><span class="admit">Admit one</span></div>
+            <div><h3 id="stubTitle">—</h3><p class="meta" id="stubWhere" style="margin-top:6px"></p></div>
+            <div class="countdown" id="countdown"></div>
+            <button class="btn btn-accent" type="button" id="stubBtn">Get tickets</button>
+          </div>
+        </article>
+      </div>
+
+      <div class="finder" role="search">
+        <div class="fields">
+          <label class="field"><span class="ms">search</span><input id="q" type="search" placeholder="Search artists, bands, venues, or cities…" aria-label="Search"></label>
+          <label class="field"><span class="ms">calendar_month</span>
+            <select id="when" aria-label="Date range">
+              <option value="all">Date Range: All Dates</option>
+              <option value="weekend">This Weekend</option>
+              <option value="30">Next 30 Days</option>
+              <option value="9">October</option>
+              <option value="10">November</option>
+              <option value="11">December</option>
+            </select><span class="ms chev">expand_more</span></label>
+          <label class="field"><span class="ms">tune</span>
+            <select id="genre" aria-label="Genre"></select><span class="ms chev">expand_more</span></label>
+          <label class="field"><span class="ms">location_on</span>
+            <select id="city" aria-label="City">
+              <option value="all">All Cities</option>
+              <option>London</option><option>New York</option><option>Berlin</option><option>Austin</option><option>Tokyo</option>
+            </select><span class="ms chev">expand_more</span></label>
+        </div>
+        <div class="pills" id="pills"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="block" id="shows">
+    <div class="wrap">
+      <div class="section-head">
+        <div><span class="eyebrow">Upcoming shows</span><h2>On stage this season</h2></div>
+      </div>
+      <div class="toolbar">
+        <p class="result-count" id="resultCount" aria-live="polite"></p>
+        <div class="tool-right">
+          <label class="sort"><span class="sr" hidden>Sort</span>
+            <select id="sort" aria-label="Sort shows">
+              <option value="date">Soonest first</option>
+              <option value="price">Lowest price</option>
+              <option value="hot">Selling fastest</option>
+            </select><span class="ms">expand_more</span></label>
+          <div class="seg" role="group" aria-label="View">
+            <button type="button" id="viewGrid" aria-pressed="true"><span class="ms">grid_view</span>Grid</button>
+            <button type="button" id="viewAgenda" aria-pressed="false"><span class="ms">view_agenda</span>Agenda</button>
+          </div>
+        </div>
+      </div>
+      <div id="results"></div>
+    </div>
+  </section>
+
+  <section class="block band" id="tours">
+    <div class="wrap">
+      <div class="tours-head">
+        <div><span class="eyebrow">On the road</span><h2>Biggest tours of 2026</h2></div>
+        <div class="tour-nav"><button type="button" id="tourPrev" aria-label="Scroll left"><span class="ms">arrow_back</span></button><button type="button" id="tourNext" aria-label="Scroll right"><span class="ms">arrow_forward</span></button></div>
+      </div>
+      <div class="tours" id="tourList"></div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap news">
+    <div>
+      <span class="eyebrow"><span class="ms" style="font-size:18px">campaign</span>Concert dispatch &amp; pre-sales</span>
+      <h4>Stay Tuned for Pre-Sales &amp; Lineup Drops</h4>
+      <p>Get exclusive artist pre-sale codes, weekly local gig guides, and festival announcements delivered to your inbox.</p>
+    </div>
+    <form id="newsForm">
+      <input id="newsEmail" type="email" required placeholder="Enter your email address…" aria-label="Email address">
+      <button class="btn btn-accent" type="submit" style="padding:13px 24px;font-size:14px">Subscribe</button>
+    </form>
+  </div>
+  <div class="legal">
+    <div class="wrap">
+      <div class="chips"><span>© 2026 Concertix LLC. All rights reserved.</span><span class="chip"><i></i>Verified Fan Guarantee</span><span class="chip g"><i></i>Zero Hidden Service Fees</span></div>
+      <nav aria-label="Footer"><a href="#shows">Tour Dates</a><a href="#shows">Festival Guide</a><a href="#tours">Artists</a><a href="#shows">Fan Guarantee</a><a href="#shows">Terms &amp; Privacy</a></nav>
+    </div>
+  </div>
+</footer>
+
+<div class="modal" id="modal" hidden role="dialog" aria-modal="true" aria-labelledby="mTitle">
+  <div class="sheet">
+    <div class="sheet-art" id="mArt"><button class="sheet-close" type="button" id="mClose" aria-label="Close"><span class="ms">close</span></button></div>
+    <form class="sheet-body" id="bookForm">
+      <div><span class="eyebrow">Live concert tickets</span><h3 id="mTitle" style="margin-top:6px">—</h3><p class="sub" id="mSub"></p></div>
+      <fieldset class="tiers" id="tiers"><legend>Ticket type</legend></fieldset>
+      <div class="qty"><span class="lbl" style="margin:0">Quantity</span>
+        <div class="stepper"><button type="button" id="qMinus" aria-label="Fewer tickets"><span class="ms">remove</span></button><output id="qOut">2</output><button type="button" id="qPlus" aria-label="More tickets"><span class="ms">add</span></button></div></div>
+      <div><label class="lbl" for="bName" style="display:block">Full name</label><input id="bName" type="text" required placeholder="e.g. Clara Thorne"></div>
+      <div><label class="lbl" for="bEmail" style="display:block">Email for your tickets</label><input id="bEmail" type="email" required placeholder="clara@example.com"></div>
+      <div class="note"><span class="ms">verified_user</span><span>Free exchange or refund up to 72 hours before doors.</span></div>
+      <div class="total"><span class="lbl" style="margin:0">Total, all-in</span><b id="mTotal">$0</b></div>
+      <button class="btn btn-accent" type="submit" style="padding:14px;font-size:14px">Reserve tickets</button>
+    </form>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"><span class="ms">check_circle</span><div><b id="toastTitle">Done</b><span id="toastMsg"></span></div></div>
+
+<script>
+(() => {
+const GENRES = {
+  indie:{label:"Indie & Alternative",icon:"music_note",pal:["#9a8a28","#faf9f4","#23221e","#d4a373"]},
+  electronic:{label:"Electronic & Club",icon:"waves",pal:["#032517","#9a8a28","#abcfb8","#d4a373"]},
+  hiphop:{label:"Hip-Hop & R&B",icon:"equalizer",pal:["#23221e","#9a8a28","#d4a373","#faf9f4"]},
+  rock:{label:"Rock & Metal",icon:"flash_on",pal:["#1b3b2b","#d4a373","#faf9f4","#9a8a28"]},
+  jazz:{label:"Jazz & Soul",icon:"album",pal:["#2c2b26","#d4a373","#efeee9","#9a8a28"]},
+  acoustic:{label:"Acoustic & Folk",icon:"piano",pal:["#f5f4ef","#9a8a28","#032517","#1b3b2b"]}
+};
+const VENUES = {
+  lantern:{name:"The Lantern Room",city:"London",cap:450,kind:"Victorian music hall",seed:11},
+  foundry:{name:"Brixton Foundry",city:"London",cap:2400,kind:"Converted ironworks",seed:12},
+  harbor:{name:"Harbor Hall",city:"New York",cap:3100,kind:"Pier-side auditorium",seed:13},
+  cellar:{name:"Canal St. Cellar",city:"New York",cap:180,kind:"Basement jazz club",seed:14},
+  halle:{name:"Halle Nord",city:"Berlin",cap:1600,kind:"Former power station",seed:15},
+  cedar:{name:"Cedar Street Yard",city:"Austin",cap:900,kind:"Open-air courtyard",seed:16},
+  shimo:{name:"Shimokita Basement",city:"Tokyo",cap:220,kind:"Live house",seed:17},
+  aoyama:{name:"Aoyama Parlour",city:"Tokyo",cap:140,kind:"Listening bar",seed:18}
+};
+// sold = share of capacity sold (0–1)
+const EVENTS = [
+  {id:"e1",artist:"The Velvet Harbour",support:"with Juniper Kid",genre:"indie",venue:"lantern",date:"2026-10-02T20:00",price:34,sold:.81},
+  {id:"e2",artist:"KOVA",support:"All-night long set",genre:"electronic",venue:"halle",date:"2026-10-03T23:00",price:29,sold:.64},
+  {id:"e3",artist:"Oda Reyes Trio",support:"Two sets, 8pm & 10pm",genre:"jazz",venue:"cellar",date:"2026-10-04T20:00",price:42,sold:.93},
+  {id:"e4",artist:"Static Bloom",support:"with Marrow",genre:"rock",venue:"foundry",date:"2026-10-09T19:30",price:38,sold:.55},
+  {id:"e5",artist:"Mira Solen",support:"Seasons of Salt, album release",genre:"hiphop",venue:"cedar",date:"2026-10-10T20:00",price:45,sold:.71},
+  {id:"e6",artist:"Hollis & The Fern",support:"Unplugged, seated",genre:"acoustic",venue:"aoyama",date:"2026-10-14T19:00",price:52,sold:.97},
+  {id:"e7",artist:"Saltwater Hymns",support:"The Long Light Tour",genre:"acoustic",venue:"harbor",date:"2026-10-17T18:30",price:58,sold:.72},
+  {id:"e8",artist:"Neon Orchard",support:"Live A/V show",genre:"electronic",venue:"shimo",date:"2026-10-24T21:00",price:31,sold:1},
+  {id:"e9",artist:"Dust & Diamonds",support:"with Low Tide Choir",genre:"indie",venue:"cedar",date:"2026-10-31T20:30",price:27,sold:.42},
+  {id:"e10",artist:"Ardent Brass Quartet",support:"Late-night soul revue",genre:"jazz",venue:"lantern",date:"2026-11-06T21:00",price:36,sold:.58},
+  {id:"e11",artist:"Juniper Kid",support:"First headline tour",genre:"hiphop",venue:"harbor",date:"2026-11-14T20:00",price:49,sold:.66},
+  {id:"e12",artist:"Marrow",support:"Ten Years of Ash",genre:"rock",venue:"halle",date:"2026-11-21T20:00",price:44,sold:.88},
+  {id:"e13",artist:"Low Tide Choir",support:"Winter harmonies",genre:"acoustic",venue:"foundry",date:"2026-12-05T19:30",price:33,sold:.37},
+  {id:"e14",artist:"Paper Lanterns",support:"with guests",genre:"indie",venue:"shimo",date:"2026-12-12T19:00",price:28,sold:.49},
+  {id:"e15",artist:"KOVA b2b Neon Orchard",support:"New Year's warm-up",genre:"electronic",venue:"foundry",date:"2026-12-19T22:00",price:47,sold:.9}
+].map(e => ({...e, d:new Date(e.date), v:VENUES[e.venue]}));
+const byId = Object.fromEntries(EVENTS.map(e=>[e.id,e]));
+
+/* ---------- generative poster art ---------- */
+function rng(a){return()=>{a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+function seedOf(str){let h=2166136261;for(const c of String(str)){h^=c.charCodeAt(0);h=Math.imul(h,16777619)}return h>>>0}
+function poster(key,pal,style){
+  const r=rng(seedOf(key)); const [bg,a,b,c]=pal; const W=400,H=300;
+  let s=`<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><rect width="${W}" height="${H}" fill="${bg}"/>`;
+  const cx=80+r()*240, cy=70+r()*120, R=70+r()*70;
+  // sun + rings
+  s+=`<circle cx="${cx}" cy="${cy}" r="${R}" fill="${a}"/>`;
+  for(let i=1;i<5;i++) s+=`<circle cx="${cx}" cy="${cy}" r="${R+i*16}" fill="none" stroke="${a}" stroke-opacity="${.35-i*.07}" stroke-width="1.5"/>`;
+  // stripes through sun
+  const n=5+Math.floor(r()*4);
+  for(let i=0;i<n;i++){const y=cy+R*.1+i*(R*.9/n);s+=`<rect x="0" y="${y}" width="${W}" height="${2+i*1.4}" fill="${bg}"/>`}
+  // waveform
+  let pts=[]; const base=H*.78; const amp=18+r()*26; const f=.02+r()*.04; const ph=r()*6;
+  for(let x=0;x<=W;x+=4){const env=Math.sin(Math.PI*x/W);pts.push(`${x},${(base+Math.sin(x*f+ph)*amp*env*(0.6+0.4*Math.sin(x*.11))).toFixed(1)}`)}
+  s+=`<polyline points="${pts.join(" ")}" fill="none" stroke="${b}" stroke-width="2.5" stroke-linecap="round"/>`;
+  // bars
+  for(let x=10;x<W;x+=14){const h=4+r()*24;s+=`<rect x="${x}" y="${H-h}" width="6" height="${h}" rx="2" fill="${c}" fill-opacity=".85"/>`}
+  // grain dots
+  for(let i=0;i<40;i++) s+=`<circle cx="${(r()*W).toFixed(1)}" cy="${(r()*H).toFixed(1)}" r="${(r()*1.4).toFixed(2)}" fill="${b}" fill-opacity=".5"/>`;
+  if(style==="arch"){s+=`<rect x="${W/2-2}" y="0" width="4" height="${H}" fill="${b}" fill-opacity=".15"/>`}
+  return s+"</svg>";
+}
+const artFor = e => poster(e.id, GENRES[e.genre].pal);
+
+/* ---------- helpers ---------- */
+const $ = s => document.querySelector(s);
+const fmtMon = d => d.toLocaleString("en-US",{month:"short"}).toUpperCase();
+const fmtDay = d => d.toLocaleString("en-US",{weekday:"short"});
+const fmtTime = d => d.toLocaleString("en-US",{hour:"numeric",minute:"2-digit"});
+const esc = s => String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+function availability(e){ if(e.sold>=1) return {cls:"out",txt:"Sold out"}; if(e.sold>=.85) return {cls:"fast",txt:"Last few left"}; if(e.sold>=.7) return {cls:"fast",txt:"Selling fast"}; return {cls:"ok",txt:"Available"}; }
+
+/* ---------- saved ---------- */
+let saved = new Set();
+try{ saved = new Set(JSON.parse(localStorage.getItem("resonance-saved")||"[]")); }catch(_){}
+function persist(){ try{ localStorage.setItem("resonance-saved",JSON.stringify([...saved])); }catch(_){} updateSavedCount(); }
+function updateSavedCount(){ const c=$("#savedCount"); if(c){ c.textContent=saved.size; c.hidden=!saved.size; } const sp=document.querySelector("[data-save-spot] span:last-child"); if(sp) sp.textContent=saved.has("e7")?"Saved":"Save"; }
+
+/* ---------- state ---------- */
+const state = {cat:"all",q:"",when:"all",city:"all",sort:"date",view:"grid",savedOnly:false};
+
+// genre select + pills
+$("#genre").innerHTML = `<option value="all">Genre: All Genres</option>` + Object.entries(GENRES).map(([k,g])=>`<option value="${k}">${esc(g.label)}</option>`).join("");
+function renderPills(){
+  const counts = {}; EVENTS.forEach(e=>counts[e.genre]=(counts[e.genre]||0)+1);
+  $("#pills").innerHTML = `<button type="button" class="pill" data-cat="all" aria-pressed="${state.cat==="all"}">All Shows <span class="n">(${EVENTS.length})</span></button>` +
+    Object.entries(GENRES).map(([k,g])=>`<button type="button" class="pill" data-cat="${k}" aria-pressed="${state.cat===k}"><span class="ms">${g.icon}</span>${esc(g.label)} <span class="n">${counts[k]||0}</span></button>`).join("");
+}
+
+function inRange(e){
+  const now=new Date(); now.setHours(0,0,0,0);
+  if(state.when==="all") return true;
+  if(state.when==="weekend"){ const fri=new Date(now); const dow=now.getDay(); const add=dow<=5?5-dow:(dow===6?-1:-2); fri.setDate(now.getDate()+add); const mon=new Date(fri); mon.setDate(fri.getDate()+3); return e.d>=fri && e.d<mon; }
+  if(state.when==="30"){ const end=new Date(now); end.setDate(now.getDate()+30); return e.d>=now && e.d<=end; }
+  return e.d.getMonth()===+state.when;
+}
+function filtered(){
+  const q=state.q.toLowerCase().trim();
+  let list=EVENTS.filter(e=>
+    (state.cat==="all"||e.genre===state.cat) &&
+    (state.city==="all"||e.v.city===state.city) &&
+    (!state.savedOnly||saved.has(e.id)) &&
+    inRange(e) &&
+    (!q || [e.artist,e.support,e.v.name,e.v.city,GENRES[e.genre].label].join(" ").toLowerCase().includes(q)));
+  const s={date:(a,b)=>a.d-b.d,price:(a,b)=>a.price-b.price,hot:(a,b)=>b.sold-a.sold}[state.sort];
+  return list.sort(s);
+}
+
+function cardHTML(e,i){
+  const a=availability(e), g=GENRES[e.genre];
+  const btn = a.cls==="out" ? `<button class="btn btn-outline" type="button" data-wait="${e.id}">Join waitlist</button>` : `<button class="btn btn-accent" type="button" data-book="${e.id}">Tickets</button>`;
+  return `<article class="card" style="animation-delay:${Math.min(i,8)*40}ms">
+    <div class="card-art">${artFor(e)}
+      <div class="date-chip"><small>${fmtMon(e.d)}</small><b>${e.d.getDate()}</b></div>
+      <button class="save" type="button" data-save="${e.id}" aria-pressed="${saved.has(e.id)}" aria-label="Save ${esc(e.artist)}"><span class="ms">favorite</span></button>
+      ${e.sold>=.85&&e.sold<1?`<span class="badge"><i></i>${Math.round(e.sold*100)}% sold</span>`:""}
+    </div>
+    <div class="card-body">
+      <span class="genre-tag">${esc(g.label)}</span>
+      <h3>${esc(e.artist)}</h3>
+      <p class="support">${esc(e.support)}</p>
+      <p class="where"><span class="ms">location_on</span>${esc(e.v.name)}, ${esc(e.v.city)}</p>
+      <p class="where"><span class="ms">schedule</span>${fmtDay(e.d)} · ${fmtTime(e.d)}</p>
+      <div class="card-foot"><div><span class="from">FROM</span><b>$${e.price}</b></div><div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px"><span class="avail ${a.cls}"><i></i>${a.txt}</span>${btn}</div></div>
+    </div></article>`;
+}
+function agendaHTML(list){
+  const groups={}; list.forEach(e=>{const k=e.d.toLocaleString("en-US",{month:"long",year:"numeric"});(groups[k]=groups[k]||[]).push(e)});
+  return `<div class="agenda">`+Object.entries(groups).map(([m,es])=>`<div><h3 class="month">${m}</h3>`+es.map(e=>{const a=availability(e);return `<div class="row">
+    <div class="d"><b>${String(e.d.getDate()).padStart(2,"0")}</b><small>${fmtDay(e.d)}</small></div>
+    <div><h4>${esc(e.artist)}</h4><p class="sub">${esc(e.v.name)}, ${esc(e.v.city)} · ${fmtTime(e.d)} · <span class="avail ${a.cls}"><i></i>${a.txt}</span></p></div>
+    <span class="p">$${e.price}</span>
+    ${a.cls==="out"?`<button class="btn btn-outline" type="button" data-wait="${e.id}">Waitlist</button>`:`<button class="btn btn-accent" type="button" data-book="${e.id}">Tickets</button>`}
+  </div>`}).join("")+`</div>`).join("")+`</div>`;
+}
+function render(){
+  renderPills();
+  $("#genre").value=state.cat;
+  const list=filtered();
+  const label = state.savedOnly ? " saved" : "";
+  $("#resultCount").innerHTML = `Showing <b>${list.length}</b>${label} of <b>${EVENTS.length}</b> shows` + (state.savedOnly?` · <button type="button" id="clearSaved" style="border:0;background:none;color:var(--accent-text);font-weight:700;padding:0">Show all</button>`:"");
+  const out=$("#results");
+  if(!list.length){ out.innerHTML=`<div class="empty"><h3>No shows match those filters</h3><p>Try another date range or city, or clear everything to see the full season.</p><button class="btn btn-accent" type="button" id="resetAll">Clear filters</button></div>`; return; }
+  out.innerHTML = state.view==="grid" ? `<div class="grid">${list.map(cardHTML).join("")}</div>` : agendaHTML(list);
+}
+
+/* ---------- venues ---------- */
+let follows=new Set(); try{ follows=new Set(JSON.parse(localStorage.getItem("concertix-follows")||"[]")); }catch(_){}
+const artists=[...new Set(EVENTS.flatMap(e=>e.artist.split(" b2b ")))].map(a=>({name:a,n:EVENTS.filter(e=>e.artist.includes(a)).length}));
+const initials=a=>a.replace(/^The /,"").replace(/&/g," ").split(/\s+/).filter(Boolean).slice(0,2).map((w,i)=>i?`<i>${w[0]}</i>`:w[0]).join("");
+$("#tourList").innerHTML=artists.map((a,i)=>`<div class="tour"><div class="tour-disc"><button type="button" class="tour-open t${i%6}" data-artist="${esc(a.name)}" aria-label="See ${esc(a.name)} dates"><span>${initials(a.name)}</span></button><button type="button" class="star" data-follow="${esc(a.name)}" aria-pressed="${follows.has(a.name)}" aria-label="Follow ${esc(a.name)}"><span class="ms">star</span></button></div><b>${esc(a.name)}</b><small>${a.n} date${a.n===1?"":"s"}</small></div>`).join("");
+$("#tourPrev").onclick=()=>$("#tourList").scrollBy({left:-552});
+$("#tourNext").onclick=()=>$("#tourList").scrollBy({left:552});
+
+/* ---------- hero bits ---------- */
+const next = EVENTS.filter(e=>e.d>new Date()).sort((a,b)=>a.d-b.d)[0] || EVENTS[0];
+$("#stubMon").textContent = next.d.toLocaleString("en-US",{month:"short"}).toUpperCase();
+$("#stubDay").textContent = String(next.d.getDate()).padStart(2,"0");
+$("#stubWd").textContent = next.d.toLocaleString("en-US",{weekday:"long"});
+$("#stubTitle").textContent = next.artist;
+$("#stubWhere").innerHTML = `${esc(next.v.name)}, ${esc(next.v.city)} · <span style="white-space:nowrap">Doors ${fmtTime(next.d)}</span>`;
+$("#stubBtn").dataset.book = next.id;
+$("#barcode").innerHTML = [2,1,3,1,1,2,1,3,2,1,1,2,3,1,2,1,1,3].map(w=>`<i style="width:${w}px"></i>`).join("");
+function tick(){ let ms=Math.max(0,next.d-new Date()); const d=Math.floor(ms/864e5); ms-=d*864e5; const h=Math.floor(ms/36e5); ms-=h*36e5; const m=Math.floor(ms/6e4); const sec=Math.floor((ms-m*6e4)/1e3);
+  $("#countdown").innerHTML=[[d,"days"],[h,"hrs"],[m,"min"],[sec,"sec"]].map(([v,l])=>`<span class="u"><b>${String(v).padStart(2,"0")}</b><small>${l}</small></span>`).join('<span class="colon">:</span>'); }
+tick(); setInterval(tick,1000);
+
+/* ---------- modal ---------- */
+const TIERS=[{k:"ga",n:"General admission",d:"Standing, main floor",m:1},{k:"bal",n:"Balcony seated",d:"Reserved seat, first tier",m:1.45},{k:"vip",n:"VIP pit",d:"Front section, early entry, merch",m:2.6}];
+let cur=null, qty=2;
+function openBook(id){
+  cur=byId[id]; qty=2;
+  $("#mArt").querySelector("svg")?.remove(); $("#mArt").insertAdjacentHTML("afterbegin",artFor(cur));
+  $("#mTitle").textContent=cur.artist;
+  $("#mSub").textContent=`${cur.v.name}, ${cur.v.city} · ${cur.d.toLocaleString("en-US",{weekday:"short",day:"numeric",month:"short"})} · ${fmtTime(cur.d)}`;
+  $("#tiers").innerHTML=`<legend>Ticket type</legend>`+TIERS.map((t,i)=>`<label class="tier"><input type="radio" name="tier" value="${t.k}" ${i===0?"checked":""}><span>${t.n}<small>${t.d}</small></span><b>$${Math.round(cur.price*t.m)}</b></label>`).join("");
+  updateTotal(); $("#modal").hidden=false; setTimeout(()=>$("#bName").focus(),50);
+}
+function updateTotal(){ const t=TIERS.find(t=>t.k===(document.querySelector("input[name=tier]:checked")||{}).value)||TIERS[0]; $("#qOut").textContent=qty; $("#mTotal").textContent="$"+(Math.round(cur.price*t.m)*qty).toLocaleString(); }
+function closeBook(){ $("#modal").hidden=true; }
+$("#tiers").addEventListener("change",updateTotal);
+$("#qMinus").onclick=()=>{qty=Math.max(1,qty-1);updateTotal()};
+$("#qPlus").onclick=()=>{qty=Math.min(8,qty+1);updateTotal()};
+$("#mClose").onclick=closeBook;
+$("#modal").addEventListener("click",e=>{if(e.target.id==="modal")closeBook()});
+document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!$("#modal").hidden)closeBook()});
+$("#bookForm").addEventListener("submit",e=>{e.preventDefault();closeBook();toast("Tickets reserved",`${qty} × ${cur.artist}. This is a demo checkout, so no payment was taken.`);e.target.reset();});
+
+/* ---------- toast ---------- */
+let tt; function toast(title,msg){ $("#toastTitle").textContent=title; $("#toastMsg").textContent=msg; $("#toast").classList.add("show"); clearTimeout(tt); tt=setTimeout(()=>$("#toast").classList.remove("show"),4200); }
+
+/* ---------- events ---------- */
+document.addEventListener("click",e=>{
+  const t=e.target.closest("button"); if(!t) return;
+  if(t.dataset.cat){ state.cat=t.dataset.cat; render(); }
+  else if(t.dataset.book){ openBook(t.dataset.book); }
+  else if(t.dataset.wait){ toast("On the waitlist",`We'll alert you if tickets for ${byId[t.dataset.wait].artist} come back.`); }
+  else if(t.dataset.save || t.dataset.saveSpot){ const id=t.dataset.save||t.dataset.saveSpot; saved.has(id)?saved.delete(id):saved.add(id); persist(); if(t.dataset.save) t.setAttribute("aria-pressed",saved.has(id)); if(state.savedOnly) render(); toast(saved.has(id)?"Saved":"Removed", `${byId[id].artist} ${saved.has(id)?"added to":"removed from"} your saved shows.`); }
+  else if(t.dataset.artist){ state.q=t.dataset.artist; $("#q").value=state.q; state.cat="all"; state.when="all"; $("#when").value="all"; state.city="all"; $("#city").value="all"; render(); $("#shows").scrollIntoView({behavior:"smooth"}); }
+  else if(t.dataset.follow){ const a=t.dataset.follow; follows.has(a)?follows.delete(a):follows.add(a); try{localStorage.setItem("concertix-follows",JSON.stringify([...follows]))}catch(_){} t.setAttribute("aria-pressed",follows.has(a)); toast(follows.has(a)?"Following":"Unfollowed", follows.has(a)?`We'll tell you when ${a} adds dates.`:`You won't get alerts for ${a}.`); }
+  else if(t.dataset.toast){ toast("Coming soon",t.dataset.toast); }
+  else if(t.id==="resetAll"||t.id==="clearSaved"){ Object.assign(state,{cat:"all",q:"",when:"all",city:"all",savedOnly:false}); $("#q").value="";$("#when").value="all";$("#city").value="all"; render(); }
+  else if(t.id==="savedToggle"){ state.savedOnly=!state.savedOnly; render(); $("#shows").scrollIntoView({behavior:"smooth"}); }
+});
+$("#q").addEventListener("input",e=>{state.q=e.target.value;render()});
+$("#when").addEventListener("change",e=>{state.when=e.target.value;render()});
+$("#city").addEventListener("change",e=>{state.city=e.target.value;render()});
+$("#genre").addEventListener("change",e=>{state.cat=e.target.value;render()});
+$("#sort").addEventListener("change",e=>{state.sort=e.target.value;render()});
+$("#viewGrid").onclick=()=>{state.view="grid";$("#viewGrid").setAttribute("aria-pressed","true");$("#viewAgenda").setAttribute("aria-pressed","false");render()};
+$("#viewAgenda").onclick=()=>{state.view="agenda";$("#viewAgenda").setAttribute("aria-pressed","true");$("#viewGrid").setAttribute("aria-pressed","false");render()};
+$("#newsForm").addEventListener("submit",e=>{e.preventDefault();toast("Subscribed","Pre-sale codes will land in your inbox before general sale.");e.target.reset();});
+
+updateSavedCount(); render();
+})();
+</script>
+
+</body></html>
