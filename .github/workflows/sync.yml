@@ -1,0 +1,62 @@
+name: Sync Songkick and deploy
+
+on:
+  schedule:
+    - cron: "17 4 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Run unit tests
+        run: npm test
+
+      - name: Restore previous data (keeps a metro's events if its crawl fails)
+        uses: actions/cache/restore@v4
+        with:
+          path: dist/data
+          key: songkick-data-${{ github.run_id }}
+          restore-keys: |
+            songkick-data-
+
+      - name: Crawl Songkick
+        run: node scripts/sync-songkick.mjs --out dist/data
+
+      - name: Save data for the next run
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: dist/data
+          key: songkick-data-${{ github.run_id }}
+
+      - name: Assemble site
+        run: cp Concertix.html dist/index.html
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+      - id: deployment
+        uses: actions/deploy-pages@v4
