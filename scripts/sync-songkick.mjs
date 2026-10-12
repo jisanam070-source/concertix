@@ -2,7 +2,7 @@
 // CLI: node scripts/sync-songkick.mjs [--out dist/data] [--limit N] [--concurrency 4]
 import { createFetcher } from "./songkick/fetch.mjs";
 import { listMetroAreas } from "./songkick/sitemap.mjs";
-import { syncMetros } from "./songkick/sync.mjs";
+import { syncMetros, cutoffDate } from "./songkick/sync.mjs";
 
 function arg(name, fallback) {
   const i = process.argv.indexOf(`--${name}`);
@@ -19,7 +19,7 @@ try {
   let metros = await listMetroAreas(fetcher.fetchGzipText);
   if (limit > 0) metros = metros.slice(0, limit);
   log(`crawling ${metros.length} metro areas → ${outDir}`);
-  const today = new Date().toISOString().slice(0, 10);
+  const today = cutoffDate();
   const summary = await syncMetros({ metros, fetchText: fetcher.fetchText, outDir, today, concurrency, log });
   log(`done: ${summary.ok} ok, ${summary.failed.length} failed, ${summary.events} events`);
 } catch (e) {

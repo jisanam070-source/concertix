@@ -5,6 +5,13 @@ import { parseMetroPage } from "./parse.mjs";
 
 const FAILURE_THRESHOLD = 0.2;
 
+// Events are dated in venue-local time and the job runs at 04:17 UTC, when it is
+// still the previous evening across the Americas. Keep yesterday (UTC) so
+// tonight's shows stay listed; the browser then filters by the viewer's own date.
+export function cutoffDate(now = new Date()) {
+  return new Date(now.getTime() - 864e5).toISOString().slice(0, 10);
+}
+
 export async function crawlMetro(metro, fetchText, today) {
   const first = parseMetroPage(await fetchText(metro.url));
   const all = [...first.events];

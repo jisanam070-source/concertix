@@ -5,6 +5,7 @@ const LD_RE = /<script type="application\/ld\+json">([\s\S]*?)<\/script>/g;
 const PAGE_RE = /[?&]page=(\d+)/g;
 const UPCOMING_RE = /(\d[\d,]*)\s+upcoming/;
 const TITLE_RE = /<title>([\s\S]*?)<\/title>/;
+const SONGKICK_URL_RE = /^https:\/\/www\.songkick\.com\//;
 const CONCERT_ID_RE = /\/(?:concerts|id)\/(\d+)/;
 
 function statusOf(eventStatus = "") {
@@ -15,6 +16,8 @@ function statusOf(eventStatus = "") {
 
 function normalize(ev) {
   const url = String(ev.url || "").split("?")[0];
+  // Scraped URLs end up in href/src attributes, so only trust Songkick https links.
+  if (!SONGKICK_URL_RE.test(url)) return null;
   const idMatch = url.match(CONCERT_ID_RE);
   if (!idMatch) return null;
   const performers = Array.isArray(ev.performer) ? ev.performer : ev.performer ? [ev.performer] : [];
@@ -31,7 +34,7 @@ function normalize(ev) {
       country: addr.addressCountry || "", lat: geo.latitude ?? null, lng: geo.longitude ?? null,
     },
     date: String(ev.startDate || ""),
-    image: ev.image || "",
+    image: /^https:\/\//.test(String(ev.image || "")) ? ev.image : "",
     url,
     status: statusOf(ev.eventStatus),
   };

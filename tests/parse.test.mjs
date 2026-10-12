@@ -49,3 +49,10 @@ test("empty page yields no events", () => {
   assert.deepEqual(parseMetroPage("<html><title>Nowhere – Songkick</title></html>"),
     { events: [], lastPage: 1, upcomingCount: null, metroName: null });
 });
+
+test("drops events whose url is not an https songkick.com url, and non-https images", () => {
+  const block = (url, image) => `<script type="application/ld+json">${JSON.stringify({ "@type": "MusicEvent", url, image, startDate: "2026-11-01", performer: [{ name: "A" }] })}</script>`;
+  const r = parseMetroPage(`<html>${block("javascript:alert(1)//concerts/1", "")}${block("https://evil.example/concerts/2", "")}${block("https://www.songkick.com/concerts/3-ok", "javascript:x")}</html>`);
+  assert.deepEqual(r.events.map(e => e.id), ["sk-3"]);
+  assert.equal(r.events[0].image, "");
+});
