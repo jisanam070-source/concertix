@@ -35,7 +35,7 @@ test("throws HTTP 406 when both header sets are rejected", async () => {
 
 test("retries on 503 then succeeds, with backoff 1s,2s", async () => {
   const calls = []; const waits = []; let n = 0;
-  const f = createFetcher({ fetchImpl: async () => { calls.push(++n); return n < 3 ? res(503, "") : res(200, "ok"); }, sleep: async ms => { waits.push(ms); } });
+  const f = createFetcher({ fetchImpl: async () => { calls.push(++n); return n < 3 ? res(503, "") : res(200, "ok"); }, sleep: async ms => { waits.push(ms); }, minIntervalMs: 0 });
   assert.equal(await f.fetchText("https://x/"), "ok");
   assert.equal(calls.length, 3);
   assert.deepEqual(waits.filter(w => w >= 1000), [1000, 2000]);
@@ -72,4 +72,13 @@ test("spaces requests by minIntervalMs", async () => {
   const f = createFetcher({ fetchImpl: async () => res(200, ""), sleep: async ms => { waits.push(ms); }, minIntervalMs: 500 });
   await f.fetchText("https://x/1"); await f.fetchText("https://x/2");
   assert.ok(waits.some(w => w > 0 && w <= 500), `waits: ${waits}`);
+});
+
+test("rate limit is global across concurrent callers", async () => {
+  const waits = [];
+  const f = createFetcher({ fetchImpl: async () => res(200, ""), sleep: async ms => { waits.push(ms); }, minIntervalMs: 500 });
+  await Promise.all([1, 2, 3, 4, 5].map(i => f.fetchText(`https://x/${i}`)));
+  // Each concurrent caller must reserve its own slot: ~500, 1000, 1500, 2000 ms.
+  assert.equal(waits.length, 4, `waits: ${waits}`);
+  waits.forEach((w, i) => assert.ok(Math.abs(w - 500 * (i + 1)) < 50, `waits: ${waits}`));
 });

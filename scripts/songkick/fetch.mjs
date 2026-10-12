@@ -20,12 +20,15 @@ export function createFetcher({
   minIntervalMs = 500,
   timeoutMs = 30000,
 } = {}) {
-  let lastRequestAt = 0;
+  // Each caller reserves the next free slot synchronously, so concurrent
+  // workers queue up behind each other instead of all reading the same clock.
+  let nextSlotAt = 0;
 
   async function once(url, headers) {
-    const wait = lastRequestAt + minIntervalMs - Date.now();
-    if (wait > 0) await sleep(wait);
-    lastRequestAt = Date.now();
+    const now = Date.now();
+    const slot = Math.max(now, nextSlotAt);
+    nextSlotAt = slot + minIntervalMs;
+    if (slot > now) await sleep(slot - now);
     return fetchImpl(url, { headers, signal: AbortSignal.timeout(timeoutMs) });
   }
 
