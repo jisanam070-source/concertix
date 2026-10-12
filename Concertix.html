@@ -577,7 +577,7 @@ async function loadMetro(id){
     const json=await r.json();
     if(currentMetro && currentMetro.id!==id) return; // a newer selection won
     setEvents((json.events||[]).filter(isUpcoming));
-  }catch(err){ console.error("loadMetro",err); loadError(); }
+  }catch(err){ if(currentMetro && currentMetro.id!==id) return; console.error("loadMetro",err); loadError(); }
 }
 async function init(){
   $("#results").innerHTML=skeletonHTML();
