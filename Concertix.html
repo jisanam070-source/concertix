@@ -293,6 +293,18 @@ footer{margin-top:clamp(40px,5vw,64px);background:var(--night);color:var(--night
 .toast b{display:block;font-size:14px}
 .toast span{font-size:12.5px;color:var(--night-muted)}
 
+/* --- Songkick data: city picker, skeletons, artist images --- */
+.metro-list{position:absolute;top:calc(100% + 6px);left:0;right:0;z-index:30;background:var(--card);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);overflow:hidden;display:flex;flex-direction:column}
+.metro-opt{display:flex;justify-content:space-between;align-items:center;gap:10px;width:100%;padding:10px 16px;border:0;background:none;text-align:left;font-size:13.5px}
+.metro-opt:hover,.metro-opt:focus-visible{background:var(--surface-low);outline:none}
+.metro-opt small{display:block;font-size:11px;color:var(--muted)}
+.metro-opt .n{font-size:11px;font-weight:700;color:var(--accent-text)}
+.card-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:transform .6s}
+.card:hover .card-img{transform:scale(1.04)}
+.card.skeleton{min-height:380px;background:linear-gradient(90deg,var(--surface-low) 25%,var(--surface) 50%,var(--surface-low) 75%);background-size:200% 100%;animation:shimmer 1.2s infinite linear}
+@keyframes shimmer{from{background-position:200% 0}to{background-position:-200% 0}}
+.card-foot .btn{padding:9px 16px;font-size:12.5px}
+
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
 </style>
 
@@ -332,7 +344,7 @@ footer{margin-top:clamp(40px,5vw,64px);background:var(--night);color:var(--night
             <div class="stub-top"><span class="eyebrow">Next up</span><span class="admit">Admit one</span></div>
             <div><h3 id="stubTitle">—</h3><p class="meta" id="stubWhere" style="margin-top:6px"></p></div>
             <div class="countdown" id="countdown"></div>
-            <button class="btn btn-accent" type="button" id="stubBtn">Get tickets</button>
+            <a class="btn btn-accent" id="stubBtn" href="#shows" target="_blank" rel="noopener">Get tickets</a>
           </div>
         </article>
       </div>
@@ -345,17 +357,10 @@ footer{margin-top:clamp(40px,5vw,64px);background:var(--night);color:var(--night
               <option value="all">Date Range: All Dates</option>
               <option value="weekend">This Weekend</option>
               <option value="30">Next 30 Days</option>
-              <option value="9">October</option>
-              <option value="10">November</option>
-              <option value="11">December</option>
             </select><span class="ms chev">expand_more</span></label>
           <label class="field"><span class="ms">tune</span>
             <select id="genre" aria-label="Genre"></select><span class="ms chev">expand_more</span></label>
-          <label class="field"><span class="ms">location_on</span>
-            <select id="city" aria-label="City">
-              <option value="all">All Cities</option>
-              <option>London</option><option>New York</option><option>Berlin</option><option>Austin</option><option>Tokyo</option>
-            </select><span class="ms chev">expand_more</span></label>
+          <label class="field"><span class="ms">location_on</span><input id="metroQ" type="search" placeholder="City" aria-label="City" autocomplete="off"><div class="metro-list" id="metroList" hidden role="listbox"></div></label>
         </div>
         <div class="pills" id="pills"></div>
       </div>
@@ -373,8 +378,7 @@ footer{margin-top:clamp(40px,5vw,64px);background:var(--night);color:var(--night
           <label class="sort"><span class="sr" hidden>Sort</span>
             <select id="sort" aria-label="Sort shows">
               <option value="date">Soonest first</option>
-              <option value="price">Lowest price</option>
-              <option value="hot">Selling fastest</option>
+              <option value="az">A to Z</option>
             </select><span class="ms">expand_more</span></label>
           <div class="seg" role="group" aria-label="View">
             <button type="button" id="viewGrid" aria-pressed="true"><span class="ms">grid_view</span>Grid</button>
@@ -417,23 +421,6 @@ footer{margin-top:clamp(40px,5vw,64px);background:var(--night);color:var(--night
   </div>
 </footer>
 
-<div class="modal" id="modal" hidden role="dialog" aria-modal="true" aria-labelledby="mTitle">
-  <div class="sheet">
-    <div class="sheet-art" id="mArt"><button class="sheet-close" type="button" id="mClose" aria-label="Close"><span class="ms">close</span></button></div>
-    <form class="sheet-body" id="bookForm">
-      <div><span class="eyebrow">Live concert tickets</span><h3 id="mTitle" style="margin-top:6px">—</h3><p class="sub" id="mSub"></p></div>
-      <fieldset class="tiers" id="tiers"><legend>Ticket type</legend></fieldset>
-      <div class="qty"><span class="lbl" style="margin:0">Quantity</span>
-        <div class="stepper"><button type="button" id="qMinus" aria-label="Fewer tickets"><span class="ms">remove</span></button><output id="qOut">2</output><button type="button" id="qPlus" aria-label="More tickets"><span class="ms">add</span></button></div></div>
-      <div><label class="lbl" for="bName" style="display:block">Full name</label><input id="bName" type="text" required placeholder="e.g. Clara Thorne"></div>
-      <div><label class="lbl" for="bEmail" style="display:block">Email for your tickets</label><input id="bEmail" type="email" required placeholder="clara@example.com"></div>
-      <div class="note"><span class="ms">verified_user</span><span>Free exchange or refund up to 72 hours before doors.</span></div>
-      <div class="total"><span class="lbl" style="margin:0">Total, all-in</span><b id="mTotal">$0</b></div>
-      <button class="btn btn-accent" type="submit" style="padding:14px;font-size:14px">Reserve tickets</button>
-    </form>
-  </div>
-</div>
-
 <div class="toast" id="toast" role="status" aria-live="polite"><span class="ms">check_circle</span><div><b id="toastTitle">Done</b><span id="toastMsg"></span></div></div>
 
 <script>
@@ -446,35 +433,19 @@ const GENRES = {
   jazz:{label:"Jazz & Soul",icon:"album",pal:["#2c2b26","#d4a373","#efeee9","#9a8a28"]},
   acoustic:{label:"Acoustic & Folk",icon:"piano",pal:["#f5f4ef","#9a8a28","#032517","#1b3b2b"]}
 };
-const VENUES = {
-  lantern:{name:"The Lantern Room",city:"London",cap:450,kind:"Victorian music hall",seed:11},
-  foundry:{name:"Brixton Foundry",city:"London",cap:2400,kind:"Converted ironworks",seed:12},
-  harbor:{name:"Harbor Hall",city:"New York",cap:3100,kind:"Pier-side auditorium",seed:13},
-  cellar:{name:"Canal St. Cellar",city:"New York",cap:180,kind:"Basement jazz club",seed:14},
-  halle:{name:"Halle Nord",city:"Berlin",cap:1600,kind:"Former power station",seed:15},
-  cedar:{name:"Cedar Street Yard",city:"Austin",cap:900,kind:"Open-air courtyard",seed:16},
-  shimo:{name:"Shimokita Basement",city:"Tokyo",cap:220,kind:"Live house",seed:17},
-  aoyama:{name:"Aoyama Parlour",city:"Tokyo",cap:140,kind:"Listening bar",seed:18}
-};
-// sold = share of capacity sold (0–1)
-const EVENTS = [
-  {id:"e1",artist:"The Velvet Harbour",support:"with Juniper Kid",genre:"indie",venue:"lantern",date:"2026-10-02T20:00",price:34,sold:.81},
-  {id:"e2",artist:"KOVA",support:"All-night long set",genre:"electronic",venue:"halle",date:"2026-10-03T23:00",price:29,sold:.64},
-  {id:"e3",artist:"Oda Reyes Trio",support:"Two sets, 8pm & 10pm",genre:"jazz",venue:"cellar",date:"2026-10-04T20:00",price:42,sold:.93},
-  {id:"e4",artist:"Static Bloom",support:"with Marrow",genre:"rock",venue:"foundry",date:"2026-10-09T19:30",price:38,sold:.55},
-  {id:"e5",artist:"Mira Solen",support:"Seasons of Salt, album release",genre:"hiphop",venue:"cedar",date:"2026-10-10T20:00",price:45,sold:.71},
-  {id:"e6",artist:"Hollis & The Fern",support:"Unplugged, seated",genre:"acoustic",venue:"aoyama",date:"2026-10-14T19:00",price:52,sold:.97},
-  {id:"e7",artist:"Saltwater Hymns",support:"The Long Light Tour",genre:"acoustic",venue:"harbor",date:"2026-10-17T18:30",price:58,sold:.72},
-  {id:"e8",artist:"Neon Orchard",support:"Live A/V show",genre:"electronic",venue:"shimo",date:"2026-10-24T21:00",price:31,sold:1},
-  {id:"e9",artist:"Dust & Diamonds",support:"with Low Tide Choir",genre:"indie",venue:"cedar",date:"2026-10-31T20:30",price:27,sold:.42},
-  {id:"e10",artist:"Ardent Brass Quartet",support:"Late-night soul revue",genre:"jazz",venue:"lantern",date:"2026-11-06T21:00",price:36,sold:.58},
-  {id:"e11",artist:"Juniper Kid",support:"First headline tour",genre:"hiphop",venue:"harbor",date:"2026-11-14T20:00",price:49,sold:.66},
-  {id:"e12",artist:"Marrow",support:"Ten Years of Ash",genre:"rock",venue:"halle",date:"2026-11-21T20:00",price:44,sold:.88},
-  {id:"e13",artist:"Low Tide Choir",support:"Winter harmonies",genre:"acoustic",venue:"foundry",date:"2026-12-05T19:30",price:33,sold:.37},
-  {id:"e14",artist:"Paper Lanterns",support:"with guests",genre:"indie",venue:"shimo",date:"2026-12-12T19:00",price:28,sold:.49},
-  {id:"e15",artist:"KOVA b2b Neon Orchard",support:"New Year's warm-up",genre:"electronic",venue:"foundry",date:"2026-12-19T22:00",price:47,sold:.9}
-].map(e => ({...e, d:new Date(e.date), v:VENUES[e.venue]}));
-const byId = Object.fromEntries(EVENTS.map(e=>[e.id,e]));
+/* ---------- data (from the daily Songkick crawl, see scripts/sync-songkick.mjs) ---------- */
+const DATA_BASE = "data/";
+let EVENTS = [], byId = {}, METROS = [], currentMetro = null;
+const pad2 = n => String(n).padStart(2,"0");
+const todayISO = () => { const d=new Date(); return `${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}`; };
+const isUpcoming = e => String(e.date).slice(0,10) >= todayISO();
+// Date-only strings are built as local dates so they never shift a day in negative-offset timezones.
+const toDate = s => s.length===10 ? new Date(+s.slice(0,4), +s.slice(5,7)-1, +s.slice(8,10)) : new Date(s);
+function setEvents(list){
+  EVENTS = list.map(e=>({...e, d:toDate(e.date), v:e.venue}));
+  byId = Object.fromEntries(EVENTS.map(e=>[e.id,e]));
+  render(); renderHero(); renderTours();
+}
 
 /* ---------- generative poster art ---------- */
 function rng(a){return()=>{a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
@@ -507,20 +478,24 @@ const $ = s => document.querySelector(s);
 const fmtMon = d => d.toLocaleString("en-US",{month:"short"}).toUpperCase();
 const fmtDay = d => d.toLocaleString("en-US",{weekday:"short"});
 const fmtTime = d => d.toLocaleString("en-US",{hour:"numeric",minute:"2-digit"});
+const fmtTimeOrTBA = (d,e) => e.date.length===10 ? "Time TBA" : fmtTime(d);
 const esc = s => String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
-function availability(e){ if(e.sold>=1) return {cls:"out",txt:"Sold out"}; if(e.sold>=.85) return {cls:"fast",txt:"Last few left"}; if(e.sold>=.7) return {cls:"fast",txt:"Selling fast"}; return {cls:"ok",txt:"Available"}; }
+function statusBadge(e){ if(e.status==="cancelled") return `<span class="avail out"><i></i>Cancelled</span>`; if(e.status==="postponed") return `<span class="avail fast"><i></i>Postponed</span>`; return ""; }
+const ticketLink = (e,label) => `<a class="btn btn-accent" href="${esc(e.url)}" target="_blank" rel="noopener">${label}</a>`;
 
 /* ---------- saved ---------- */
 let saved = new Set();
 try{ saved = new Set(JSON.parse(localStorage.getItem("resonance-saved")||"[]")); }catch(_){}
 function persist(){ try{ localStorage.setItem("resonance-saved",JSON.stringify([...saved])); }catch(_){} updateSavedCount(); }
-function updateSavedCount(){ const c=$("#savedCount"); if(c){ c.textContent=saved.size; c.hidden=!saved.size; } const sp=document.querySelector("[data-save-spot] span:last-child"); if(sp) sp.textContent=saved.has("e7")?"Saved":"Save"; }
+function updateSavedCount(){ const c=$("#savedCount"); if(c){ c.textContent=saved.size; c.hidden=!saved.size; } }
 
 /* ---------- state ---------- */
-const state = {cat:"all",q:"",when:"all",city:"all",sort:"date",view:"grid",savedOnly:false};
+const state = {cat:"all",q:"",when:"all",sort:"date",view:"grid",savedOnly:false};
 
 // genre select + pills
 $("#genre").innerHTML = `<option value="all">Genre: All Genres</option>` + Object.entries(GENRES).map(([k,g])=>`<option value="${k}">${esc(g.label)}</option>`).join("");
+// month options: the next six months
+{ const now=new Date(); const opts=[]; for(let i=0;i<6;i++){ const d=new Date(now.getFullYear(),now.getMonth()+i,1); const label=d.toLocaleString("en-US",{month:"long"})+(d.getFullYear()!==now.getFullYear()?" "+d.getFullYear():""); opts.push(`<option value="${d.getMonth()}">${label}</option>`); } $("#when").insertAdjacentHTML("beforeend",opts.join("")); }
 function renderPills(){
   const counts = {}; EVENTS.forEach(e=>counts[e.genre]=(counts[e.genre]||0)+1);
   $("#pills").innerHTML = `<button type="button" class="pill" data-cat="all" aria-pressed="${state.cat==="all"}">All Shows <span class="n">(${EVENTS.length})</span></button>` +
@@ -538,93 +513,112 @@ function filtered(){
   const q=state.q.toLowerCase().trim();
   let list=EVENTS.filter(e=>
     (state.cat==="all"||e.genre===state.cat) &&
-    (state.city==="all"||e.v.city===state.city) &&
     (!state.savedOnly||saved.has(e.id)) &&
     inRange(e) &&
     (!q || [e.artist,e.support,e.v.name,e.v.city,GENRES[e.genre].label].join(" ").toLowerCase().includes(q)));
-  const s={date:(a,b)=>a.d-b.d,price:(a,b)=>a.price-b.price,hot:(a,b)=>b.sold-a.sold}[state.sort];
+  const s={date:(a,b)=>a.date.localeCompare(b.date),az:(a,b)=>a.artist.localeCompare(b.artist)}[state.sort]||((a,b)=>a.date.localeCompare(b.date));
   return list.sort(s);
 }
 
 function cardHTML(e,i){
-  const a=availability(e), g=GENRES[e.genre];
-  const btn = a.cls==="out" ? `<button class="btn btn-outline" type="button" data-wait="${e.id}">Join waitlist</button>` : `<button class="btn btn-accent" type="button" data-book="${e.id}">Tickets</button>`;
+  const g=GENRES[e.genre];
   return `<article class="card" style="animation-delay:${Math.min(i,8)*40}ms">
-    <div class="card-art">${artFor(e)}
+    <div class="card-art">${artFor(e)}${e.image?`<img class="card-img" src="${esc(e.image)}" alt="" loading="lazy">`:""}
       <div class="date-chip"><small>${fmtMon(e.d)}</small><b>${e.d.getDate()}</b></div>
       <button class="save" type="button" data-save="${e.id}" aria-pressed="${saved.has(e.id)}" aria-label="Save ${esc(e.artist)}"><span class="ms">favorite</span></button>
-      ${e.sold>=.85&&e.sold<1?`<span class="badge"><i></i>${Math.round(e.sold*100)}% sold</span>`:""}
     </div>
     <div class="card-body">
       <span class="genre-tag">${esc(g.label)}</span>
       <h3>${esc(e.artist)}</h3>
-      <p class="support">${esc(e.support)}</p>
-      <p class="where"><span class="ms">location_on</span>${esc(e.v.name)}, ${esc(e.v.city)}</p>
-      <p class="where"><span class="ms">schedule</span>${fmtDay(e.d)} · ${fmtTime(e.d)}</p>
-      <div class="card-foot"><div><span class="from">FROM</span><b>$${e.price}</b></div><div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px"><span class="avail ${a.cls}"><i></i>${a.txt}</span>${btn}</div></div>
+      ${e.support?`<p class="support">${esc(e.support)}</p>`:""}
+      <p class="where"><span class="ms">location_on</span>${esc(e.v.name)}${e.v.city?`, ${esc(e.v.city)}`:""}</p>
+      <p class="where"><span class="ms">schedule</span>${fmtDay(e.d)} · ${fmtTimeOrTBA(e.d,e)}</p>
+      <div class="card-foot"><div>${statusBadge(e)}</div>${ticketLink(e,"Tickets on Songkick")}</div>
     </div></article>`;
 }
 function agendaHTML(list){
   const groups={}; list.forEach(e=>{const k=e.d.toLocaleString("en-US",{month:"long",year:"numeric"});(groups[k]=groups[k]||[]).push(e)});
-  return `<div class="agenda">`+Object.entries(groups).map(([m,es])=>`<div><h3 class="month">${m}</h3>`+es.map(e=>{const a=availability(e);return `<div class="row">
-    <div class="d"><b>${String(e.d.getDate()).padStart(2,"0")}</b><small>${fmtDay(e.d)}</small></div>
-    <div><h4>${esc(e.artist)}</h4><p class="sub">${esc(e.v.name)}, ${esc(e.v.city)} · ${fmtTime(e.d)} · <span class="avail ${a.cls}"><i></i>${a.txt}</span></p></div>
-    <span class="p">$${e.price}</span>
-    ${a.cls==="out"?`<button class="btn btn-outline" type="button" data-wait="${e.id}">Waitlist</button>`:`<button class="btn btn-accent" type="button" data-book="${e.id}">Tickets</button>`}
-  </div>`}).join("")+`</div>`).join("")+`</div>`;
+  return `<div class="agenda">`+Object.entries(groups).map(([m,es])=>`<div><h3 class="month">${m}</h3>`+es.map(e=>`<div class="row">
+    <div class="d"><b>${pad2(e.d.getDate())}</b><small>${fmtDay(e.d)}</small></div>
+    <div><h4>${esc(e.artist)}</h4><p class="sub">${esc(e.v.name)}${e.v.city?`, ${esc(e.v.city)}`:""} · ${fmtTimeOrTBA(e.d,e)} ${statusBadge(e)?"· "+statusBadge(e):""}</p></div>
+    <span class="p"></span>
+    ${ticketLink(e,"Tickets")}
+  </div>`).join("")+`</div>`).join("")+`</div>`;
 }
+const skeletonHTML = () => `<div class="grid">${Array.from({length:6},()=>`<article class="card skeleton" aria-hidden="true"></article>`).join("")}</div>`;
 function render(){
   renderPills();
   $("#genre").value=state.cat;
   const list=filtered();
   const label = state.savedOnly ? " saved" : "";
-  $("#resultCount").innerHTML = `Showing <b>${list.length}</b>${label} of <b>${EVENTS.length}</b> shows` + (state.savedOnly?` · <button type="button" id="clearSaved" style="border:0;background:none;color:var(--accent-text);font-weight:700;padding:0">Show all</button>`:"");
+  const where = currentMetro ? ` in <b>${esc(currentMetro.name)}</b>` : "";
+  $("#resultCount").innerHTML = `Showing <b>${list.length}</b>${label} of <b>${EVENTS.length}</b> shows${where}` + (state.savedOnly?` · <button type="button" id="clearSaved" style="border:0;background:none;color:var(--accent-text);font-weight:700;padding:0">Show all</button>`:"");
   const out=$("#results");
-  if(!list.length){ out.innerHTML=`<div class="empty"><h3>No shows match those filters</h3><p>Try another date range or city, or clear everything to see the full season.</p><button class="btn btn-accent" type="button" id="resetAll">Clear filters</button></div>`; return; }
+  if(!list.length){ out.innerHTML=`<div class="empty"><h3>No shows match those filters</h3><p>Try another date range or genre, or clear everything to see every upcoming show in this city.</p><button class="btn btn-accent" type="button" id="resetAll">Clear filters</button></div>`; return; }
   out.innerHTML = state.view==="grid" ? `<div class="grid">${list.map(cardHTML).join("")}</div>` : agendaHTML(list);
 }
 
-/* ---------- venues ---------- */
+/* ---------- city picker ---------- */
+async function loadIndex(){
+  const r=await fetch(DATA_BASE+"index.json",{cache:"no-cache"}); if(!r.ok) throw new Error("HTTP "+r.status);
+  METROS=(await r.json()).metros||[];
+}
+function metroMatches(q){ q=q.toLowerCase().trim(); return (q?METROS.filter(m=>`${m.name} ${m.country} ${m.slug}`.toLowerCase().includes(q)):METROS).slice(0,8); }
+function showMetroList(items){ const el=$("#metroList"); if(!items.length){ el.hidden=true; return; } el.innerHTML=items.map(m=>`<button type="button" class="metro-opt" role="option" data-metro="${m.id}"><span>${esc(m.name)}<small>${esc(m.country)}</small></span><span class="n">${m.count} show${m.count===1?"":"s"}</span></button>`).join(""); el.hidden=false; }
+function selectMetro(m){ currentMetro=m; try{ localStorage.setItem("concertix-metro",String(m.id)); }catch(_){} $("#metroQ").value=m.name; $("#metroList").hidden=true; loadMetro(m.id); }
+function loadError(){
+  $("#resultCount").textContent="";
+  $("#results").innerHTML=`<div class="empty"><h3>Couldn't load shows</h3><p>Check your connection and try again.</p><button class="btn btn-accent" type="button" id="retryLoad">Retry</button></div>`;
+}
+async function loadMetro(id){
+  $("#results").innerHTML=skeletonHTML(); $("#resultCount").textContent="Loading shows…";
+  try{
+    const r=await fetch(`${DATA_BASE}metros/${id}.json`,{cache:"no-cache"}); if(!r.ok) throw new Error("HTTP "+r.status);
+    const json=await r.json();
+    if(currentMetro && currentMetro.id!==id) return; // a newer selection won
+    setEvents((json.events||[]).filter(isUpcoming));
+  }catch(err){ console.error("loadMetro",err); loadError(); }
+}
+async function init(){
+  $("#results").innerHTML=skeletonHTML();
+  try{ await loadIndex(); }catch(err){ console.error("loadIndex",err); loadError(); return; }
+  let savedId=null; try{ savedId=localStorage.getItem("concertix-metro"); }catch(_){}
+  const m=METROS.find(x=>String(x.id)===savedId)||METROS[0];
+  if(m) selectMetro(m); else { $("#results").innerHTML=`<div class="empty"><h3>No shows yet</h3><p>The first crawl hasn't published any cities. Check back soon.</p></div>`; }
+}
+$("#metroQ").addEventListener("input",e=>showMetroList(metroMatches(e.target.value)));
+$("#metroQ").addEventListener("focus",e=>{ e.target.select(); showMetroList(metroMatches(e.target.value)); });
+$("#metroQ").addEventListener("blur",()=>setTimeout(()=>{ $("#metroList").hidden=true; if(currentMetro) $("#metroQ").value=currentMetro.name; },150));
+$("#metroQ").addEventListener("keydown",e=>{ if(e.key==="Enter"){ const m=metroMatches(e.target.value)[0]; if(m){ selectMetro(m); e.target.blur(); } } else if(e.key==="Escape"){ $("#metroList").hidden=true; } });
+
+/* ---------- tours strip ---------- */
 let follows=new Set(); try{ follows=new Set(JSON.parse(localStorage.getItem("concertix-follows")||"[]")); }catch(_){}
-const artists=[...new Set(EVENTS.flatMap(e=>e.artist.split(" b2b ")))].map(a=>({name:a,n:EVENTS.filter(e=>e.artist.includes(a)).length}));
 const initials=a=>a.replace(/^The /,"").replace(/&/g," ").split(/\s+/).filter(Boolean).slice(0,2).map((w,i)=>i?`<i>${w[0]}</i>`:w[0]).join("");
-$("#tourList").innerHTML=artists.map((a,i)=>`<div class="tour"><div class="tour-disc"><button type="button" class="tour-open t${i%6}" data-artist="${esc(a.name)}" aria-label="See ${esc(a.name)} dates"><span>${initials(a.name)}</span></button><button type="button" class="star" data-follow="${esc(a.name)}" aria-pressed="${follows.has(a.name)}" aria-label="Follow ${esc(a.name)}"><span class="ms">star</span></button></div><b>${esc(a.name)}</b><small>${a.n} date${a.n===1?"":"s"}</small></div>`).join("");
+function renderTours(){
+  const counts={}; EVENTS.forEach(e=>{ if(e.artist) counts[e.artist]=(counts[e.artist]||0)+1; });
+  const artists=Object.entries(counts).map(([name,n])=>({name,n})).sort((a,b)=>b.n-a.n||a.name.localeCompare(b.name)).slice(0,12);
+  $("#tourList").innerHTML=artists.map((a,i)=>`<div class="tour"><div class="tour-disc"><button type="button" class="tour-open t${i%6}" data-artist="${esc(a.name)}" aria-label="See ${esc(a.name)} dates"><span>${initials(a.name)}</span></button><button type="button" class="star" data-follow="${esc(a.name)}" aria-pressed="${follows.has(a.name)}" aria-label="Follow ${esc(a.name)}"><span class="ms">star</span></button></div><b>${esc(a.name)}</b><small>${a.n} date${a.n===1?"":"s"}</small></div>`).join("");
+}
 $("#tourPrev").onclick=()=>$("#tourList").scrollBy({left:-552});
 $("#tourNext").onclick=()=>$("#tourList").scrollBy({left:552});
 
 /* ---------- hero bits ---------- */
-const next = EVENTS.filter(e=>e.d>new Date()).sort((a,b)=>a.d-b.d)[0] || EVENTS[0];
-$("#stubMon").textContent = next.d.toLocaleString("en-US",{month:"short"}).toUpperCase();
-$("#stubDay").textContent = String(next.d.getDate()).padStart(2,"0");
-$("#stubWd").textContent = next.d.toLocaleString("en-US",{weekday:"long"});
-$("#stubTitle").textContent = next.artist;
-$("#stubWhere").innerHTML = `${esc(next.v.name)}, ${esc(next.v.city)} · <span style="white-space:nowrap">Doors ${fmtTime(next.d)}</span>`;
-$("#stubBtn").dataset.book = next.id;
+let next=null;
 $("#barcode").innerHTML = [2,1,3,1,1,2,1,3,2,1,1,2,3,1,2,1,1,3].map(w=>`<i style="width:${w}px"></i>`).join("");
-function tick(){ let ms=Math.max(0,next.d-new Date()); const d=Math.floor(ms/864e5); ms-=d*864e5; const h=Math.floor(ms/36e5); ms-=h*36e5; const m=Math.floor(ms/6e4); const sec=Math.floor((ms-m*6e4)/1e3);
-  $("#countdown").innerHTML=[[d,"days"],[h,"hrs"],[m,"min"],[sec,"sec"]].map(([v,l])=>`<span class="u"><b>${String(v).padStart(2,"0")}</b><small>${l}</small></span>`).join('<span class="colon">:</span>'); }
-tick(); setInterval(tick,1000);
-
-/* ---------- modal ---------- */
-const TIERS=[{k:"ga",n:"General admission",d:"Standing, main floor",m:1},{k:"bal",n:"Balcony seated",d:"Reserved seat, first tier",m:1.45},{k:"vip",n:"VIP pit",d:"Front section, early entry, merch",m:2.6}];
-let cur=null, qty=2;
-function openBook(id){
-  cur=byId[id]; qty=2;
-  $("#mArt").querySelector("svg")?.remove(); $("#mArt").insertAdjacentHTML("afterbegin",artFor(cur));
-  $("#mTitle").textContent=cur.artist;
-  $("#mSub").textContent=`${cur.v.name}, ${cur.v.city} · ${cur.d.toLocaleString("en-US",{weekday:"short",day:"numeric",month:"short"})} · ${fmtTime(cur.d)}`;
-  $("#tiers").innerHTML=`<legend>Ticket type</legend>`+TIERS.map((t,i)=>`<label class="tier"><input type="radio" name="tier" value="${t.k}" ${i===0?"checked":""}><span>${t.n}<small>${t.d}</small></span><b>$${Math.round(cur.price*t.m)}</b></label>`).join("");
-  updateTotal(); $("#modal").hidden=false; setTimeout(()=>$("#bName").focus(),50);
+function renderHero(){
+  next = EVENTS.filter(e=>isUpcoming(e) && e.status!=="cancelled").sort((a,b)=>a.date.localeCompare(b.date))[0] || null;
+  const stub=document.querySelector(".stub"); if(!next){ stub.hidden=true; return; } stub.hidden=false;
+  $("#stubMon").textContent = next.d.toLocaleString("en-US",{month:"short"}).toUpperCase();
+  $("#stubDay").textContent = pad2(next.d.getDate());
+  $("#stubWd").textContent = next.d.toLocaleString("en-US",{weekday:"long"});
+  $("#stubTitle").textContent = next.artist;
+  $("#stubWhere").innerHTML = `${esc(next.v.name)}${next.v.city?`, ${esc(next.v.city)}`:""} · <span style="white-space:nowrap">${next.date.length===10?"Time TBA":"Doors "+fmtTime(next.d)}</span>`;
+  $("#stubBtn").href = next.url;
+  tick();
 }
-function updateTotal(){ const t=TIERS.find(t=>t.k===(document.querySelector("input[name=tier]:checked")||{}).value)||TIERS[0]; $("#qOut").textContent=qty; $("#mTotal").textContent="$"+(Math.round(cur.price*t.m)*qty).toLocaleString(); }
-function closeBook(){ $("#modal").hidden=true; }
-$("#tiers").addEventListener("change",updateTotal);
-$("#qMinus").onclick=()=>{qty=Math.max(1,qty-1);updateTotal()};
-$("#qPlus").onclick=()=>{qty=Math.min(8,qty+1);updateTotal()};
-$("#mClose").onclick=closeBook;
-$("#modal").addEventListener("click",e=>{if(e.target.id==="modal")closeBook()});
-document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!$("#modal").hidden)closeBook()});
-$("#bookForm").addEventListener("submit",e=>{e.preventDefault();closeBook();toast("Tickets reserved",`${qty} × ${cur.artist}. This is a demo checkout, so no payment was taken.`);e.target.reset();});
+function tick(){ if(!next) return; let ms=Math.max(0,next.d-new Date()); const d=Math.floor(ms/864e5); ms-=d*864e5; const h=Math.floor(ms/36e5); ms-=h*36e5; const m=Math.floor(ms/6e4); const sec=Math.floor((ms-m*6e4)/1e3);
+  $("#countdown").innerHTML=[[d,"days"],[h,"hrs"],[m,"min"],[sec,"sec"]].map(([v,l])=>`<span class="u"><b>${pad2(v)}</b><small>${l}</small></span>`).join('<span class="colon">:</span>'); }
+setInterval(tick,1000);
 
 /* ---------- toast ---------- */
 let tt; function toast(title,msg){ $("#toastTitle").textContent=title; $("#toastMsg").textContent=msg; $("#toast").classList.add("show"); clearTimeout(tt); tt=setTimeout(()=>$("#toast").classList.remove("show"),4200); }
@@ -633,25 +627,24 @@ let tt; function toast(title,msg){ $("#toastTitle").textContent=title; $("#toast
 document.addEventListener("click",e=>{
   const t=e.target.closest("button"); if(!t) return;
   if(t.dataset.cat){ state.cat=t.dataset.cat; render(); }
-  else if(t.dataset.book){ openBook(t.dataset.book); }
-  else if(t.dataset.wait){ toast("On the waitlist",`We'll alert you if tickets for ${byId[t.dataset.wait].artist} come back.`); }
-  else if(t.dataset.save || t.dataset.saveSpot){ const id=t.dataset.save||t.dataset.saveSpot; saved.has(id)?saved.delete(id):saved.add(id); persist(); if(t.dataset.save) t.setAttribute("aria-pressed",saved.has(id)); if(state.savedOnly) render(); toast(saved.has(id)?"Saved":"Removed", `${byId[id].artist} ${saved.has(id)?"added to":"removed from"} your saved shows.`); }
-  else if(t.dataset.artist){ state.q=t.dataset.artist; $("#q").value=state.q; state.cat="all"; state.when="all"; $("#when").value="all"; state.city="all"; $("#city").value="all"; render(); $("#shows").scrollIntoView({behavior:"smooth"}); }
-  else if(t.dataset.follow){ const a=t.dataset.follow; follows.has(a)?follows.delete(a):follows.add(a); try{localStorage.setItem("concertix-follows",JSON.stringify([...follows]))}catch(_){} t.setAttribute("aria-pressed",follows.has(a)); toast(follows.has(a)?"Following":"Unfollowed", follows.has(a)?`We'll tell you when ${a} adds dates.`:`You won't get alerts for ${a}.`); }
+  else if(t.dataset.metro){ const m=METROS.find(x=>String(x.id)===t.dataset.metro); if(m) selectMetro(m); }
+  else if(t.id==="retryLoad"){ currentMetro ? loadMetro(currentMetro.id) : init(); }
+  else if(t.dataset.save || t.dataset.saveSpot){ const id=t.dataset.save||t.dataset.saveSpot; saved.has(id)?saved.delete(id):saved.add(id); persist(); if(t.dataset.save) t.setAttribute("aria-pressed",saved.has(id)); if(state.savedOnly) render(); }
+  else if(t.dataset.artist){ state.q=t.dataset.artist; $("#q").value=state.q; state.cat="all"; state.when="all"; $("#when").value="all"; render(); $("#shows").scrollIntoView({behavior:"smooth"}); }
+  else if(t.dataset.follow){ const a=t.dataset.follow; follows.has(a)?follows.delete(a):follows.add(a); try{localStorage.setItem("concertix-follows",JSON.stringify([...follows]))}catch(_){} t.setAttribute("aria-pressed",follows.has(a)); toast(follows.has(a)?"Following":"Unfollowed",a); }
   else if(t.dataset.toast){ toast("Coming soon",t.dataset.toast); }
-  else if(t.id==="resetAll"||t.id==="clearSaved"){ Object.assign(state,{cat:"all",q:"",when:"all",city:"all",savedOnly:false}); $("#q").value="";$("#when").value="all";$("#city").value="all"; render(); }
+  else if(t.id==="resetAll"||t.id==="clearSaved"){ Object.assign(state,{cat:"all",q:"",when:"all",savedOnly:false}); $("#q").value="";$("#when").value="all"; render(); }
   else if(t.id==="savedToggle"){ state.savedOnly=!state.savedOnly; render(); $("#shows").scrollIntoView({behavior:"smooth"}); }
 });
 $("#q").addEventListener("input",e=>{state.q=e.target.value;render()});
 $("#when").addEventListener("change",e=>{state.when=e.target.value;render()});
-$("#city").addEventListener("change",e=>{state.city=e.target.value;render()});
 $("#genre").addEventListener("change",e=>{state.cat=e.target.value;render()});
 $("#sort").addEventListener("change",e=>{state.sort=e.target.value;render()});
 $("#viewGrid").onclick=()=>{state.view="grid";$("#viewGrid").setAttribute("aria-pressed","true");$("#viewAgenda").setAttribute("aria-pressed","false");render()};
 $("#viewAgenda").onclick=()=>{state.view="agenda";$("#viewAgenda").setAttribute("aria-pressed","true");$("#viewGrid").setAttribute("aria-pressed","false");render()};
 $("#newsForm").addEventListener("submit",e=>{e.preventDefault();toast("Subscribed","Pre-sale codes will land in your inbox before general sale.");e.target.reset();});
 
-updateSavedCount(); render();
+updateSavedCount(); init();
 })();
 </script>
 
