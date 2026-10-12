@@ -1,5 +1,5 @@
 // Orchestrates a full crawl: every metro → per-metro JSON + index + summary.
-import { mkdir, writeFile, readFile } from "node:fs/promises";
+import { mkdir, writeFile, readFile, readdir, unlink } from "node:fs/promises";
 import { join } from "node:path";
 import { parseMetroPage } from "./parse.mjs";
 
@@ -43,10 +43,13 @@ export async function syncMetros({ metros, fetchText, outDir, today, concurrency
       }
     } catch (e) {
       failed.push({ id: metro.id, error: String(e.message || e) });
+      // Keep yesterday's data for this metro, minus anything that has since passed.
       const prev = await readPrevious(outDir, metro.id);
-      if (prev && prev.events?.length) {
-        indexEntries.push({ id: prev.id, slug: prev.slug, name: prev.name, country: prev.country, count: prev.events.length });
-        eventTotal += prev.events.length;
+      const kept = (prev?.events || []).filter(e => String(e.date).slice(0, 10) >= today);
+      if (kept.length) {
+        await writeFile(join(metrosDir, `${metro.id}.json`), JSON.stringify({ ...prev, events: kept }));
+        indexEntries.push({ id: prev.id, slug: prev.slug, name: prev.name, country: prev.country, count: kept.length });
+        eventTotal += kept.length;
       }
     }
     if (++done % 100 === 0) log(`${done}/${metros.length} metros, ${eventTotal} events, ${failed.length} failed`);
@@ -60,6 +63,10 @@ export async function syncMetros({ metros, fetchText, outDir, today, concurrency
   const summary = { updatedAt, total: metros.length, ok, failed, events: eventTotal };
   await writeFile(join(outDir, "summary.json"), JSON.stringify(summary, null, 2));
   if (failed.length > FAILURE_THRESHOLD * metros.length) throw new Error(`Too many failures: ${failed.length} of ${metros.length}`);
+  // Drop files for metros that now have no upcoming events or left the sitemap,
+  // so stale data restored from the previous run's cache never resurfaces.
+  const live = new Set(indexEntries.map(m => `${m.id}.json`));
+  for (const f of await readdir(metrosDir)) if (f.endsWith(".json") && !live.has(f)) await unlink(join(metrosDir, f));
   indexEntries.sort((a, b) => b.count - a.count || a.id - b.id);
   await writeFile(join(outDir, "index.json"), JSON.stringify({ updatedAt, metros: indexEntries }));
   return summary;

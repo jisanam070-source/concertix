@@ -76,3 +76,44 @@ test("throws when more than 20% of metros fail", async () => {
   assert.ok(existsSync(join(out, "summary.json")));
   assert.ok(!existsSync(join(out, "index.json")));
 });
+
+test("removes the old file when a metro now crawls with zero events", async () => {
+  const out = tmp(); mkdirSync(join(out, "metros"), { recursive: true });
+  writeFileSync(join(out, "metros", "1.json"), JSON.stringify({ id: 1, slug: "a", name: "A", country: "US", updatedAt: "x", events: [{ id: "sk-1", date: "2026-10-09" }] }));
+  const metros = [metro(1, "a"), ...[2, 3, 4, 5].map(i => metro(i))];
+  const pages = Object.fromEntries(metros.map(m => [m.url, page(m.id === 1 ? [] : [ev(String(m.id), "2026-10-09")])]));
+  await syncMetros({ metros, fetchText: fetcherFor(pages), outDir: out, today: TODAY });
+  assert.ok(!existsSync(join(out, "metros", "1.json")));
+  assert.ok(!readJson(join(out, "index.json")).metros.some(m => m.id === 1));
+});
+
+test("removes files for metros no longer in the sitemap", async () => {
+  const out = tmp(); mkdirSync(join(out, "metros"), { recursive: true });
+  writeFileSync(join(out, "metros", "777.json"), JSON.stringify({ id: 777, slug: "gone", name: "Gone", country: "US", updatedAt: "x", events: [{ id: "sk-9", date: "2026-10-09" }] }));
+  const a = metro(1, "a");
+  await syncMetros({ metros: [a], fetchText: fetcherFor({ [a.url]: page([ev("1", "2026-10-09")]) }), outDir: out, today: TODAY });
+  assert.ok(!existsSync(join(out, "metros", "777.json")));
+  assert.ok(existsSync(join(out, "metros", "1.json")));
+});
+
+test("a kept file for a failed metro drops past events and updates its count", async () => {
+  const out = tmp(); mkdirSync(join(out, "metros"), { recursive: true });
+  const old = { id: 9, slug: "old", name: "Oldtown", country: "US", updatedAt: "x", events: [
+    { id: "sk-1", date: "2026-10-01" }, { id: "sk-2", date: "2026-10-07T20:00:00" }, { id: "sk-3", date: "2026-10-20" }] };
+  writeFileSync(join(out, "metros", "9.json"), JSON.stringify(old));
+  const metros = [metro(9, "old"), ...[1, 2, 3, 4].map(i => metro(i))];
+  const pages = Object.fromEntries(metros.slice(1).map(m => [m.url, page([ev(String(m.id), "2026-10-09")])]));
+  await syncMetros({ metros, fetchText: fetcherFor(pages), outDir: out, today: TODAY });
+  assert.deepEqual(readJson(join(out, "metros", "9.json")).events.map(e => e.id), ["sk-2", "sk-3"]);
+  assert.equal(readJson(join(out, "index.json")).metros.find(m => m.id === 9).count, 2);
+});
+
+test("a kept file whose events are all past is removed and not indexed", async () => {
+  const out = tmp(); mkdirSync(join(out, "metros"), { recursive: true });
+  writeFileSync(join(out, "metros", "9.json"), JSON.stringify({ id: 9, slug: "old", name: "Oldtown", country: "US", updatedAt: "x", events: [{ id: "sk-1", date: "2026-10-01" }] }));
+  const metros = [metro(9, "old"), ...[1, 2, 3, 4].map(i => metro(i))];
+  const pages = Object.fromEntries(metros.slice(1).map(m => [m.url, page([ev(String(m.id), "2026-10-09")])]));
+  await syncMetros({ metros, fetchText: fetcherFor(pages), outDir: out, today: TODAY });
+  assert.ok(!existsSync(join(out, "metros", "9.json")));
+  assert.ok(!readJson(join(out, "index.json")).metros.some(m => m.id === 9));
+});
