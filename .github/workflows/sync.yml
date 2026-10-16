@@ -34,7 +34,9 @@ jobs:
       - name: Restore previous data (keeps a metro's events if its crawl fails)
         uses: actions/cache/restore@v4
         with:
-          path: dist/data
+          path: |
+            dist/data
+            cache
           key: songkick-data-${{ github.run_id }}
           restore-keys: |
             songkick-data-
@@ -42,11 +44,19 @@ jobs:
       - name: Crawl Songkick
         run: node scripts/sync-songkick.mjs --out dist/data
 
+      - name: Add Ticketmaster ticket links (skipped without the secret; never blocks the deploy)
+        continue-on-error: true
+        env:
+          TICKETMASTER_API_KEY: ${{ secrets.TICKETMASTER_API_KEY }}
+        run: node scripts/sync-ticketmaster.mjs --data dist/data --cache cache/tm-matches.json
+
       - name: Save data for the next run
         if: always()
         uses: actions/cache/save@v4
         with:
-          path: dist/data
+          path: |
+            dist/data
+            cache
           key: songkick-data-${{ github.run_id }}
 
       - name: Assemble site

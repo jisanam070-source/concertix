@@ -330,6 +330,16 @@ footer{margin-top:clamp(40px,5vw,64px);background:var(--night);color:var(--night
 .ev-mapwrap{position:relative;border-radius:24px;overflow:hidden;border:1px solid var(--line);background:var(--surface-low)}
 .ev-map{display:block;width:100%;height:320px;border:0}
 .ev-mapwrap .btn{position:absolute;right:16px;bottom:16px;background:var(--bg)}
+.ev-tickets{margin-top:10px;background:var(--night);color:var(--night-ink);border-radius:22px;padding:20px;display:flex;flex-direction:column;gap:12px;box-shadow:var(--shadow)}
+.ev-tickets h2{font-family:var(--sans);font-size:18px;font-weight:700;color:var(--night-ink)}
+.ev-tickets ul{list-style:none;margin:0;padding:0;border-radius:16px;overflow:hidden;background:rgba(255,255,255,.9)}
+.ev-tickets li+li{border-top:1px solid rgba(0,0,0,.1)}
+.ev-ticket{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 16px;color:var(--ink)}
+.ev-ticket:hover{background:#fff}
+.ev-ticket b{display:block;font-size:15px}
+.ev-ticket small{display:block;font-size:12.5px;color:var(--muted)}
+.ev-ticket .ms{color:var(--muted);font-size:18px}
+.ev-tickets p{font-size:13.5px;color:var(--night-muted)}
 .ev-missing{text-align:center;padding:clamp(40px,8vw,96px) 0;display:flex;flex-direction:column;align-items:center;gap:14px}
 .ev-missing h1{font-size:clamp(28px,4vw,44px)}
 @media (max-width:860px){.ev-grid{grid-template-columns:1fr}.ev-facts>div{grid-template-columns:92px minmax(0,1fr)}}
@@ -682,6 +692,19 @@ function mapHTML(v){
     <a class="btn btn-outline" href="https://www.google.com/maps/dir/?api=1&amp;destination=${lat.toFixed(5)},${lng.toFixed(5)}" target="_blank" rel="noopener"><span class="ms">directions</span>Directions</a>
   </div></section>`;
 }
+const TICKET_STATUS = { onsale:"On sale now", offsale:"Off sale", cancelled:"Cancelled", canceled:"Cancelled", postponed:"Postponed", rescheduled:"Rescheduled" };
+function priceText(t){
+  if(!Number.isFinite(t.priceMin) || !t.currency) return "";
+  try{ return "From " + new Intl.NumberFormat("en",{style:"currency",currency:t.currency,maximumFractionDigits:t.priceMin%1?2:0}).format(t.priceMin); }catch(_){ return ""; }
+}
+function ticketsHTML(e){
+  const list=(e.tickets||[]).filter(t=>/^https:\/\//.test(t.url||""));
+  if(!list.length) return `<div class="ev-tickets"><h2>Buy tickets</h2><p>No ticket link for this show yet. Check the venue's own website.</p></div>`;
+  return `<div class="ev-tickets"><h2>Buy tickets</h2><ul>${list.map(t=>{
+    const sub=[TICKET_STATUS[t.status]||"Tickets", priceText(t)].filter(Boolean).join(" · ");
+    return `<li><a class="ev-ticket" href="${esc(t.url)}" target="_blank" rel="noopener nofollow"><span><b>${esc(t.seller||"Tickets")}</b><small>${esc(sub)}</small></span><span class="ms">open_in_new</span></a></li>`;
+  }).join("")}</ul></div>`;
+}
 function moreHTML(title, list){ return list.length ? `<section class="ev-block"><h2>${title}</h2><div class="grid">${list.map(cardHTML).join("")}</div></section>` : ""; }
 function eventPageHTML(e){
   const g=GENRES[e.genre], v=e.v, city=currentMetro ? currentMetro.name : v.city;
@@ -710,6 +733,7 @@ function eventPageHTML(e){
           <button class="btn btn-outline" type="button" data-save="${e.id}" aria-pressed="${saved.has(e.id)}"><span class="ms">favorite</span>Save</button>
           <button class="btn btn-outline" type="button" data-copy-link><span class="ms">link</span>Copy link</button>
         </div>
+        ${ticketsHTML(e)}
       </div>
     </div>
     ${mapHTML(v)}

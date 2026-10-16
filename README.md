@@ -39,6 +39,20 @@ npm run sync
 
 Output goes to `dist/data/index.json`, `dist/data/metros/<id>.json` and `dist/data/summary.json`.
 
+## Ticket links (Ticketmaster)
+
+After the crawl, `scripts/sync-ticketmaster.mjs` pulls music events from the official Ticketmaster Discovery API and matches them to the crawled shows by venue, date, artist and start time. A match puts a "Buy tickets" link to the exact Ticketmaster page on that show's page. Only confident matches are linked.
+
+- The key comes from `TICKETMASTER_API_KEY`: a GitHub Actions secret for the daily run, or a git-ignored `.env` file locally. Without it the step is skipped.
+- A run uses about 2,000 of the key's 5,000 daily requests and is capped at 4,500. If it stops early, shows beyond that date keep the previous run's links from `cache/tm-matches.json`.
+- Coverage is highest in the US and UK. Germany and Austria are mostly sold by Eventim, and France is not in the API.
+
+Try it locally on 30 days of five countries:
+
+```bash
+node scripts/sync-ticketmaster.mjs --days 30 --countries GB,US,DE,AT,FR
+```
+
 ## Deploy with GitHub Pages
 
 1. Push this repository to GitHub.
