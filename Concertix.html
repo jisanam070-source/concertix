@@ -304,6 +304,35 @@ footer{margin-top:clamp(40px,5vw,64px);background:var(--night);color:var(--night
 .card.skeleton{min-height:380px;background:linear-gradient(90deg,var(--surface-low) 25%,var(--surface) 50%,var(--surface-low) 75%);background-size:200% 100%;animation:shimmer 1.2s infinite linear}
 @keyframes shimmer{from{background-position:200% 0}to{background-position:-200% 0}}
 .card-foot .btn{padding:9px 16px;font-size:12.5px}
+.card h3 a:hover{color:var(--accent-text)}
+/* --- Event page --- */
+.ev{padding-block:clamp(24px,4vw,48px) 0}
+.ev-back{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:700;color:var(--accent-text);margin-bottom:22px}
+.ev-back:hover{text-decoration:underline}
+.ev-grid{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:clamp(24px,4vw,56px);align-items:start}
+.ev-art{position:relative;aspect-ratio:4/3;border-radius:28px;overflow:hidden;background:var(--surface);box-shadow:var(--shadow)}
+.ev-art svg,.ev-art .card-img{position:absolute;inset:0;width:100%;height:100%}
+.ev-art .card-img{object-fit:cover}
+.ev-info{display:flex;flex-direction:column;gap:14px;min-width:0}
+.ev-info h1{font-size:clamp(34px,5vw,56px);overflow-wrap:anywhere}
+.ev-info .support{font-size:17px;color:var(--ink-2);font-style:italic;font-family:var(--serif)}
+.ev-when{font-size:12px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:#c25e1a}
+.ev-facts{display:grid;margin:6px 0 0;border-top:1px solid var(--line)}
+.ev-facts>div{display:grid;grid-template-columns:110px minmax(0,1fr);gap:12px;padding:14px 0;border-bottom:1px solid var(--line)}
+.ev-facts dt{display:flex;align-items:center;gap:8px;font-size:11.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.ev-facts dt .ms{font-size:18px;color:var(--gold)}
+.ev-facts dd{margin:0;font-size:15px;color:var(--ink);overflow-wrap:anywhere}
+.ev-facts dd small{display:block;color:var(--muted);font-size:13px}
+.ev-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:6px}
+.ev-actions [aria-pressed="true"] .ms{font-variation-settings:"FILL" 1;color:#c25e1a}
+.ev-block{margin-top:clamp(40px,5vw,64px)}
+.ev-block h2{font-size:clamp(24px,3vw,32px);margin-bottom:20px}
+.ev-mapwrap{position:relative;border-radius:24px;overflow:hidden;border:1px solid var(--line);background:var(--surface-low)}
+.ev-map{display:block;width:100%;height:320px;border:0}
+.ev-mapwrap .btn{position:absolute;right:16px;bottom:16px;background:var(--bg)}
+.ev-missing{text-align:center;padding:clamp(40px,8vw,96px) 0;display:flex;flex-direction:column;align-items:center;gap:14px}
+.ev-missing h1{font-size:clamp(28px,4vw,44px)}
+@media (max-width:860px){.ev-grid{grid-template-columns:1fr}.ev-facts>div{grid-template-columns:92px minmax(0,1fr)}}
 
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
 </style>
@@ -326,6 +355,7 @@ footer{margin-top:clamp(40px,5vw,64px);background:var(--night);color:var(--night
 </header>
 
 <main id="top">
+  <section id="eventPage" hidden aria-live="polite"></section>
   <section class="hero">
     <div class="wrap">
       <div class="hero-grid">
@@ -344,7 +374,7 @@ footer{margin-top:clamp(40px,5vw,64px);background:var(--night);color:var(--night
             <div class="stub-top"><span class="eyebrow">Next up</span><span class="admit">Admit one</span></div>
             <div><h3 id="stubTitle">—</h3><p class="meta" id="stubWhere" style="margin-top:6px"></p></div>
             <div class="countdown" id="countdown"></div>
-            <a class="btn btn-accent" id="stubBtn" href="#shows" target="_blank" rel="noopener">Get tickets</a>
+            <a class="btn btn-accent" id="stubBtn" href="#shows">See details</a>
           </div>
         </article>
       </div>
@@ -481,7 +511,9 @@ const fmtTime = d => d.toLocaleString("en-US",{hour:"numeric",minute:"2-digit"})
 const fmtTimeOrTBA = (d,e) => e.date.length===10 ? "Time TBA" : fmtTime(d);
 const esc = s => String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 function statusBadge(e){ if(e.status==="cancelled") return `<span class="avail out"><i></i>Cancelled</span>`; if(e.status==="postponed") return `<span class="avail fast"><i></i>Postponed</span>`; return ""; }
-const ticketLink = (e,label) => `<a class="btn btn-accent" href="${esc(e.url)}" target="_blank" rel="noopener">${label}</a>`;
+// Every show links to its own page on this site: #/event/<metroId>/<eventId>
+const eventHref = e => `#/event/${currentMetro ? currentMetro.id : 0}/${e.id}`;
+const detailsLink = (e,label) => `<a class="btn btn-accent" href="${eventHref(e)}">${label}</a>`;
 
 /* ---------- saved ---------- */
 let saved = new Set();
@@ -529,11 +561,11 @@ function cardHTML(e,i){
     </div>
     <div class="card-body">
       <span class="genre-tag">${esc(g.label)}</span>
-      <h3>${esc(e.artist)}</h3>
+      <h3><a href="${eventHref(e)}">${esc(e.artist)}</a></h3>
       ${e.support?`<p class="support">${esc(e.support)}</p>`:""}
       <p class="where"><span class="ms">location_on</span>${esc(e.v.name)}${e.v.city?`, ${esc(e.v.city)}`:""}</p>
       <p class="where"><span class="ms">schedule</span>${fmtDay(e.d)} · ${fmtTimeOrTBA(e.d,e)}</p>
-      <div class="card-foot"><div>${statusBadge(e)}</div>${ticketLink(e,"Tickets on Songkick")}</div>
+      <div class="card-foot"><div>${statusBadge(e)}</div>${detailsLink(e,"View details")}</div>
     </div></article>`;
 }
 function agendaHTML(list){
@@ -542,7 +574,7 @@ function agendaHTML(list){
     <div class="d"><b>${pad2(e.d.getDate())}</b><small>${fmtDay(e.d)}</small></div>
     <div><h4>${esc(e.artist)}</h4><p class="sub">${esc(e.v.name)}${e.v.city?`, ${esc(e.v.city)}`:""} · ${fmtTimeOrTBA(e.d,e)} ${statusBadge(e)?"· "+statusBadge(e):""}</p></div>
     <span class="p"></span>
-    ${ticketLink(e,"Tickets")}
+    ${detailsLink(e,"Details")}
   </div>`).join("")+`</div>`).join("")+`</div>`;
 }
 const skeletonHTML = () => `<div class="grid">${Array.from({length:6},()=>`<article class="card skeleton" aria-hidden="true"></article>`).join("")}</div>`;
@@ -570,7 +602,9 @@ function loadError(){
   $("#resultCount").textContent="";
   $("#results").innerHTML=`<div class="empty"><h3>Couldn't load shows</h3><p>Check your connection and try again.</p><button class="btn btn-accent" type="button" id="retryLoad">Retry</button></div>`;
 }
-async function loadMetro(id){
+let metroReady=null; // promise for the metro currently loading or loaded
+function loadMetro(id){ metroReady=fetchMetro(id); return metroReady; }
+async function fetchMetro(id){
   $("#results").innerHTML=skeletonHTML(); $("#resultCount").textContent="Loading shows…";
   try{
     const r=await fetch(`${DATA_BASE}metros/${id}.json`,{cache:"no-cache"}); if(!r.ok) throw new Error("HTTP "+r.status);
@@ -579,12 +613,16 @@ async function loadMetro(id){
     setEvents((json.events||[]).filter(isUpcoming));
   }catch(err){ if(currentMetro && currentMetro.id!==id) return; console.error("loadMetro",err); loadError(); }
 }
+let indexReady=null;
 async function init(){
   $("#results").innerHTML=skeletonHTML();
-  try{ await loadIndex(); }catch(err){ console.error("loadIndex",err); loadError(); return; }
+  indexReady=loadIndex();
+  try{ await indexReady; }catch(err){ console.error("loadIndex",err); loadError(); route(); return; }
   let savedId=null; try{ savedId=localStorage.getItem("concertix-metro"); }catch(_){}
-  const m=METROS.find(x=>String(x.id)===savedId)||METROS[0];
+  const r=parseRoute();
+  const m=(r && METROS.find(x=>x.id===r.metroId)) || METROS.find(x=>String(x.id)===savedId) || METROS[0];
   if(m) selectMetro(m); else { $("#results").innerHTML=`<div class="empty"><h3>No shows yet</h3><p>The first crawl hasn't published any cities. Check back soon.</p></div>`; }
+  route();
 }
 $("#metroQ").addEventListener("input",e=>showMetroList(metroMatches(e.target.value)));
 $("#metroQ").addEventListener("focus",e=>{ e.target.select(); showMetroList(metroMatches(e.target.value)); });
@@ -615,12 +653,135 @@ function renderHero(){
   $("#stubWd").textContent = next.d.toLocaleString("en-US",{weekday:"long"});
   $("#stubTitle").textContent = next.artist;
   $("#stubWhere").innerHTML = `${esc(next.v.name)}${next.v.city?`, ${esc(next.v.city)}`:""} · <span style="white-space:nowrap">${next.date.length===10?"Time TBA":"Doors "+fmtTime(next.d)}</span>`;
-  $("#stubBtn").href = next.url;
+  $("#stubBtn").setAttribute("href", eventHref(next));
   tick();
 }
 function tick(){ if(!next) return; let ms=Math.max(0,next.d-new Date()); const d=Math.floor(ms/864e5); ms-=d*864e5; const h=Math.floor(ms/36e5); ms-=h*36e5; const m=Math.floor(ms/6e4); const sec=Math.floor((ms-m*6e4)/1e3);
   $("#countdown").innerHTML=[[d,"days"],[h,"hrs"],[m,"min"],[sec,"sec"]].map(([v,l])=>`<span class="u"><b>${pad2(v)}</b><small>${l}</small></span>`).join('<span class="colon">:</span>'); }
 setInterval(tick,1000);
+
+
+/* ---------- event page ---------- */
+const BASE_TITLE = document.title;
+const LIST_SECTIONS = () => [document.querySelector(".hero"), $("#shows"), $("#tours")];
+let viewing = "list", listScrollY = 0, listHash = "";
+if ("scrollRestoration" in history) history.scrollRestoration = "manual";
+function parseRoute(){ const m=location.hash.match(/^#\/event\/(\d+)\/(sk-\d+)$/); return m ? { metroId:+m[1], eventId:m[2] } : null; }
+const fmtLongDate = d => d.toLocaleString("en-US",{weekday:"long",day:"numeric",month:"long",year:"numeric"});
+function relDay(e){
+  const days=Math.round((toDate(e.date.slice(0,10)) - toDate(todayISO()))/864e5);
+  return days<=0 ? "Today" : days===1 ? "Tomorrow" : days<7 ? `In ${days} days` : days<60 ? `In ${Math.round(days/7)} week${Math.round(days/7)===1?"":"s"}` : fmtMon(e.d)+" "+e.d.getFullYear();
+}
+function placeLine(v){ return [v.city, v.region && v.region!==v.city ? v.region : "", v.country].filter(Boolean).join(", "); }
+function mapHTML(v){
+  const lat=Number(v.lat), lng=Number(v.lng);
+  if(v.lat==null || v.lng==null || !isFinite(lat) || !isFinite(lng)) return "";
+  const bbox=[lng-0.012,lat-0.007,lng+0.012,lat+0.007].map(n=>n.toFixed(5)).join(",");
+  return `<section class="ev-block"><h2>Getting there</h2><div class="ev-mapwrap">
+    <iframe class="ev-map" title="Map of ${esc(v.name)}" loading="lazy" src="https://www.openstreetmap.org/export/embed.html?bbox=${bbox}&amp;layer=mapnik&amp;marker=${lat.toFixed(5)},${lng.toFixed(5)}"></iframe>
+    <a class="btn btn-outline" href="https://www.google.com/maps/dir/?api=1&amp;destination=${lat.toFixed(5)},${lng.toFixed(5)}" target="_blank" rel="noopener"><span class="ms">directions</span>Directions</a>
+  </div></section>`;
+}
+function moreHTML(title, list){ return list.length ? `<section class="ev-block"><h2>${title}</h2><div class="grid">${list.map(cardHTML).join("")}</div></section>` : ""; }
+function eventPageHTML(e){
+  const g=GENRES[e.genre], v=e.v, city=currentMetro ? currentMetro.name : v.city;
+  const sameVenue=EVENTS.filter(x=>x.id!==e.id && x.v.name===v.name).slice(0,3);
+  const seen=new Set([e.id,...sameVenue.map(x=>x.id)]);
+  const sameGenre=EVENTS.filter(x=>!seen.has(x.id) && x.genre===e.genre).slice(0,3);
+  const time = e.date.length===10 ? "To be announced" : fmtTime(e.d);
+  return `<div class="wrap ev">
+    <a class="ev-back" href="#shows"><span class="ms">arrow_back</span>All shows in ${esc(city)}</a>
+    <div class="ev-grid">
+      <div class="ev-art">${artFor(e)}${e.image?`<img class="card-img" src="${esc(e.image)}" alt="${esc(e.artist)}">`:""}
+        <div class="date-chip"><small>${fmtMon(e.d)}</small><b>${e.d.getDate()}</b></div></div>
+      <div class="ev-info">
+        <span class="ev-when">${esc(relDay(e))}</span>
+        <span class="genre-tag">${esc(g.label)}</span>
+        <h1>${esc(e.artist)}</h1>
+        ${e.support?`<p class="support">${esc(e.support)}</p>`:""}
+        ${statusBadge(e)?`<p>${statusBadge(e)}</p>`:""}
+        <dl class="ev-facts">
+          <div><dt><span class="ms">calendar_month</span>Date</dt><dd>${esc(fmtLongDate(e.d))}</dd></div>
+          <div><dt><span class="ms">schedule</span>Time</dt><dd>${esc(time)}</dd></div>
+          <div><dt><span class="ms">location_on</span>Venue</dt><dd>${esc(v.name)}<small>${esc(placeLine(v))}</small></dd></div>
+        </dl>
+        <div class="ev-actions">
+          <button class="btn btn-accent" type="button" data-ics="${e.id}"><span class="ms">event</span>Add to calendar</button>
+          <button class="btn btn-outline" type="button" data-save="${e.id}" aria-pressed="${saved.has(e.id)}"><span class="ms">favorite</span>Save</button>
+          <button class="btn btn-outline" type="button" data-copy-link><span class="ms">link</span>Copy link</button>
+        </div>
+      </div>
+    </div>
+    ${mapHTML(v)}
+    ${moreHTML(`More at ${esc(v.name)}`, sameVenue)}
+    ${moreHTML(`More ${esc(g.label)} in ${esc(city)}`, sameGenre)}
+  </div>`;
+}
+function missingHTML(){
+  const city = currentMetro ? currentMetro.name : "your city";
+  return `<div class="wrap ev"><div class="ev-missing"><span class="ms" style="font-size:40px;color:var(--gold)">event_busy</span>
+    <h1>This show is no longer listed</h1><p>It may have already happened or been removed from the lineup.</p>
+    <a class="btn btn-accent" href="#shows">See all shows in ${esc(city)}</a></div></div>`;
+}
+function setView(view){
+  const ev=$("#eventPage");
+  if(view==="event" && viewing==="list"){ listScrollY=scrollY; listHash=location.hash; }
+  LIST_SECTIONS().forEach(el=>el.hidden = view==="event");
+  ev.hidden = view!=="event";
+  viewing=view;
+}
+async function showEvent(r){
+  setView("event"); scrollTo(0,0);
+  const ev=$("#eventPage");
+  ev.innerHTML=`<div class="wrap ev"><div class="ev-missing"><p>Loading show…</p></div></div>`;
+  try{
+    if(indexReady) await indexReady;
+    if(!currentMetro || currentMetro.id!==r.metroId){
+      const m=METROS.find(x=>x.id===r.metroId);
+      if(!m){ ev.innerHTML=missingHTML(); document.title=BASE_TITLE; return; }
+      selectMetro(m);
+    }
+    await metroReady;
+  }catch(err){ console.error("showEvent",err); }
+  if(parseRoute()?.eventId!==r.eventId) return; // the user navigated elsewhere meanwhile
+  const e=byId[r.eventId];
+  if(!e){ ev.innerHTML=missingHTML(); document.title=BASE_TITLE; return; }
+  ev.innerHTML=eventPageHTML(e);
+  document.title=`${e.artist} at ${e.v.name} · ${BASE_TITLE}`;
+}
+function route(){
+  const r=parseRoute();
+  if(r){ showEvent(r); return; }
+  if(viewing==="event"){
+    setView("list"); document.title=BASE_TITLE;
+    const anchor=location.hash && location.hash!==listHash ? document.querySelector(location.hash.replace(/[^#\w-]/g,"")) : null;
+    requestAnimationFrame(()=> anchor ? anchor.scrollIntoView() : scrollTo(0,listScrollY));
+  }
+}
+addEventListener("hashchange", route);
+function icsText(e){
+  const z=n=>String(n).padStart(2,"0");
+  const day=d=>`${d.getFullYear()}${z(d.getMonth()+1)}${z(d.getDate())}`;
+  const stamp=d=>`${day(d)}T${z(d.getHours())}${z(d.getMinutes())}${z(d.getSeconds())}`;
+  const txt=s=>String(s).replace(/\\/g,"\\\\").replace(/[;,]/g,m=>"\\"+m).replace(/\r?\n/g,"\\n");
+  const now=new Date(); const utc=`${now.getUTCFullYear()}${z(now.getUTCMonth()+1)}${z(now.getUTCDate())}T${z(now.getUTCHours())}${z(now.getUTCMinutes())}${z(now.getUTCSeconds())}Z`;
+  let start, end;
+  if(e.date.length===10){ const n=new Date(e.d); n.setDate(n.getDate()+1); start=`DTSTART;VALUE=DATE:${day(e.d)}`; end=`DTEND;VALUE=DATE:${day(n)}`; }
+  else { const n=new Date(e.d.getTime()+3*36e5); start=`DTSTART:${stamp(e.d)}`; end=`DTEND:${stamp(n)}`; }
+  return ["BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//Concertix//Shows//EN","BEGIN:VEVENT",`UID:${e.id}@concertix`,`DTSTAMP:${utc}`,start,end,
+    `SUMMARY:${txt(e.artist)} at ${txt(e.v.name)}`,`LOCATION:${txt([e.v.name,placeLine(e.v)].filter(Boolean).join(", "))}`,
+    e.support?`DESCRIPTION:${txt(e.support)}`:"","END:VEVENT","END:VCALENDAR"].filter(Boolean).join("\r\n");
+}
+function downloadIcs(e){
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(new Blob([icsText(e)],{type:"text/calendar"}));
+  a.download=`${e.artist.replace(/[^\w]+/g,"-").replace(/^-|-$/g,"").toLowerCase()||"show"}.ics`;
+  document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+}
+async function copyLink(){
+  try{ await navigator.clipboard.writeText(location.href); toast("Link copied","Share it with anyone you're going with."); }
+  catch(_){ prompt("Copy this link:", location.href); }
+}
 
 /* ---------- toast ---------- */
 let tt; function toast(title,msg){ $("#toastTitle").textContent=title; $("#toastMsg").textContent=msg; $("#toast").classList.add("show"); clearTimeout(tt); tt=setTimeout(()=>$("#toast").classList.remove("show"),4200); }
@@ -630,6 +791,8 @@ document.addEventListener("click",e=>{
   const t=e.target.closest("button"); if(!t) return;
   if(t.dataset.cat){ state.cat=t.dataset.cat; render(); }
   else if(t.dataset.metro){ const m=METROS.find(x=>String(x.id)===t.dataset.metro); if(m) selectMetro(m); }
+  else if(t.dataset.ics){ const ev=byId[t.dataset.ics]; if(ev) downloadIcs(ev); }
+  else if(t.hasAttribute("data-copy-link")){ copyLink(); }
   else if(t.id==="retryLoad"){ currentMetro ? loadMetro(currentMetro.id) : init(); }
   else if(t.dataset.save || t.dataset.saveSpot){ const id=t.dataset.save||t.dataset.saveSpot; saved.has(id)?saved.delete(id):saved.add(id); persist(); if(t.dataset.save) t.setAttribute("aria-pressed",saved.has(id)); if(state.savedOnly) render(); }
   else if(t.dataset.artist){ state.q=t.dataset.artist; $("#q").value=state.q; state.cat="all"; state.when="all"; $("#when").value="all"; render(); $("#shows").scrollIntoView({behavior:"smooth"}); }
