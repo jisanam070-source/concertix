@@ -471,7 +471,8 @@ const GENRES = {
   hiphop:{label:"Hip-Hop & R&B",icon:"equalizer",pal:["#23221e","#9a8a28","#d4a373","#faf9f4"]},
   rock:{label:"Rock & Metal",icon:"flash_on",pal:["#1b3b2b","#d4a373","#faf9f4","#9a8a28"]},
   jazz:{label:"Jazz & Soul",icon:"album",pal:["#2c2b26","#d4a373","#efeee9","#9a8a28"]},
-  acoustic:{label:"Acoustic & Folk",icon:"piano",pal:["#f5f4ef","#9a8a28","#032517","#1b3b2b"]}
+  acoustic:{label:"Acoustic & Folk",icon:"piano",pal:["#f5f4ef","#9a8a28","#032517","#1b3b2b"]},
+  other:{label:"Comedy, Sports & More",icon:"theater_comedy",pal:["#23221e","#c25e1a","#faf9f4","#d4a373"]}
 };
 /* ---------- data (from the daily Songkick crawl, see scripts/sync-songkick.mjs) ---------- */
 const DATA_BASE = "data/";
@@ -645,7 +646,7 @@ $("#metroQ").addEventListener("keydown",e=>{ if(e.key==="Enter"){ const m=metroM
 let follows=new Set(); try{ follows=new Set(JSON.parse(localStorage.getItem("concertix-follows")||"[]")); }catch(_){}
 const initials=a=>a.replace(/^The /,"").replace(/&/g," ").split(/\s+/).filter(Boolean).slice(0,2).map((w,i)=>i?`<i>${w[0]}</i>`:w[0]).join("");
 function renderTours(){
-  const counts={}; EVENTS.forEach(e=>{ if(e.artist) counts[e.artist]=(counts[e.artist]||0)+1; });
+  const counts={}; EVENTS.forEach(e=>{ if(e.artist && e.genre!=="other") counts[e.artist]=(counts[e.artist]||0)+1; });
   const artists=Object.entries(counts).map(([name,n])=>({name,n})).sort((a,b)=>b.n-a.n||a.name.localeCompare(b.name)).slice(0,12);
   $("#tourList").innerHTML=artists.map((a,i)=>`<div class="tour"><div class="tour-disc"><button type="button" class="tour-open t${i%6}" data-artist="${esc(a.name)}" aria-label="See ${esc(a.name)} dates"><span>${initials(a.name)}</span></button><button type="button" class="star" data-follow="${esc(a.name)}" aria-pressed="${follows.has(a.name)}" aria-label="Follow ${esc(a.name)}"><span class="ms">star</span></button></div><b>${esc(a.name)}</b><small>${a.n} date${a.n===1?"":"s"}</small></div>`).join("");
 }
@@ -656,7 +657,8 @@ $("#tourNext").onclick=()=>$("#tourList").scrollBy({left:552});
 let next=null;
 $("#barcode").innerHTML = [2,1,3,1,1,2,1,3,2,1,1,2,3,1,2,1,1,3].map(w=>`<i style="width:${w}px"></i>`).join("");
 function renderHero(){
-  next = EVENTS.filter(e=>isUpcoming(e) && e.status!=="cancelled").sort((a,b)=>a.date.localeCompare(b.date))[0] || null;
+  const live = EVENTS.filter(e=>isUpcoming(e) && e.status!=="cancelled").sort((a,b)=>a.date.localeCompare(b.date));
+  next = live.find(e=>e.genre!=="other") || live[0] || null; // a concert site leads with a concert when there is one
   const stub=document.querySelector(".stub"); if(!next){ stub.hidden=true; return; } stub.hidden=false;
   $("#stubMon").textContent = next.d.toLocaleString("en-US",{month:"short"}).toUpperCase();
   $("#stubDay").textContent = pad2(next.d.getDate());
@@ -676,7 +678,7 @@ const BASE_TITLE = document.title;
 const LIST_SECTIONS = () => [document.querySelector(".hero"), $("#shows"), $("#tours")];
 let viewing = "list", listScrollY = 0, listHash = "";
 if ("scrollRestoration" in history) history.scrollRestoration = "manual";
-function parseRoute(){ const m=location.hash.match(/^#\/event\/(\d+)\/(sk-\d+)$/); return m ? { metroId:+m[1], eventId:m[2] } : null; }
+function parseRoute(){ const m=location.hash.match(/^#\/event\/(\d+)\/((?:sk|tm)-[A-Za-z0-9_-]+)$/); return m ? { metroId:+m[1], eventId:m[2] } : null; }
 const fmtLongDate = d => d.toLocaleString("en-US",{weekday:"long",day:"numeric",month:"long",year:"numeric"});
 function relDay(e){
   const days=Math.round((toDate(e.date.slice(0,10)) - toDate(todayISO()))/864e5);
@@ -752,6 +754,7 @@ function setView(view){
   if(view==="event" && viewing==="list"){ listScrollY=scrollY; listHash=location.hash; }
   LIST_SECTIONS().forEach(el=>el.hidden = view==="event");
   ev.hidden = view!=="event";
+  if(view!=="event") ev.innerHTML=""; // drop the old page so its images and cards are not kept around
   viewing=view;
 }
 async function showEvent(r){

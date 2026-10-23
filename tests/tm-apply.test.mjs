@@ -22,7 +22,7 @@ test("adds a Ticketmaster ticket to matched shows within the covered dates", asy
   const ev = read(join(dataDir, "metros", "1.json")).events;
   assert.deepEqual(ev[0].tickets, [{ seller: "Ticketmaster", url: "https://www.ticketmaster.com/x/event/A", status: "onsale" }]);
   assert.equal(ev[1].tickets, undefined);
-  assert.deepEqual(stats, { shows: 2, covered: 2, matched: 1, fromCache: 0 });
+  assert.deepEqual({ ...stats, matchedTmIds: [...stats.matchedTmIds] }, { shows: 2, covered: 2, matched: 1, fromCache: 0, matchedTmIds: ["tm-A"] });
   assert.equal(read(cachePath)["sk-1"].url, "https://www.ticketmaster.com/x/event/A");
 });
 

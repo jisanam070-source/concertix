@@ -39,19 +39,25 @@ npm run sync
 
 Output goes to `dist/data/index.json`, `dist/data/metros/<id>.json` and `dist/data/summary.json`.
 
-## Ticket links (Ticketmaster)
+## Ticketmaster shows and ticket links
 
-After the crawl, `scripts/sync-ticketmaster.mjs` pulls music events from the official Ticketmaster Discovery API and matches them to the crawled shows by venue, date, artist and start time. A match puts a "Buy tickets" link to the exact Ticketmaster page on that show's page. Only confident matches are linked.
+After the crawl, `scripts/sync-ticketmaster.mjs` talks to the official Ticketmaster Discovery API and does two things:
 
+1. **Adds shows.** It pulls every upcoming event at the venues listed in `data/ticketmaster-venues.json` (2,145 US and Canadian venues, from the Pathfinder export of 2026-10-20) and adds the ones Songkick does not have. Each goes into the nearest Songkick city within 80 km, or into a new city named after the venue's town. Sports, comedy and theatre land in the "Comedy, Sports & More" genre. Events are refetched from today onward on every run, so past ones disappear automatically.
+2. **Links tickets.** It matches Ticketmaster events to Songkick shows by venue, date, artist and start time and puts a "Buy tickets" link to the exact Ticketmaster page on the show page. Only confident matches are linked.
+
+Details:
 - The key comes from `TICKETMASTER_API_KEY`: a GitHub Actions secret for the daily run, or a git-ignored `.env` file locally. Without it the step is skipped.
-- A run uses about 2,000 of the key's 5,000 daily requests and is capped at 4,500. If it stops early, shows beyond that date keep the previous run's links from `cache/tm-matches.json`.
-- Coverage is highest in the US and UK. Germany and Austria are mostly sold by Eventim, and France is not in the API.
+- Venue ids are sent in batches, so all venues cost roughly 400 requests a run. The market-wide pull for ticket links costs about 2,000 more. The run is capped at 4,500 of the key's 5,000 daily requests. If it stops early, shows beyond that date keep the previous run's links from `cache/tm-matches.json`.
+- Ticket-link coverage is highest in the US and UK. Germany and Austria are mostly sold by Eventim, and France is not in the API.
 
-Try it locally on 30 days of five countries:
+Try it locally on a few states and 60 days:
 
 ```bash
-node scripts/sync-ticketmaster.mjs --days 30 --countries GB,US,DE,AT,FR
+node scripts/sync-ticketmaster.mjs --days 60 --states NY,CA,IL --countries US,GB
 ```
+
+Flags: `--no-venues` skips adding shows, `--no-markets` skips the market-wide pull, `--budget N` caps requests.
 
 ## Deploy with GitHub Pages
 

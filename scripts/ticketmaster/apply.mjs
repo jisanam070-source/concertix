@@ -12,7 +12,7 @@ export async function applyTickets({ dataDir, cachePath, tmEvents, coveredUntil,
   const oldCache = await readJson(cachePath, {});
   const cache = {};
   for (const [id, t] of Object.entries(oldCache)) if (t && String(t.date) >= today) cache[id] = t;
-  const stats = { shows: 0, covered: 0, matched: 0, fromCache: 0 };
+  const stats = { shows: 0, covered: 0, matched: 0, fromCache: 0, matchedTmIds: new Set() };
   const metrosDir = join(dataDir, "metros");
   for (const f of (await readdir(metrosDir)).filter(f => f.endsWith(".json"))) {
     const p = join(metrosDir, f); const metro = await readJson(p, null);
@@ -24,7 +24,7 @@ export async function applyTickets({ dataDir, cachePath, tmEvents, coveredUntil,
       if (day < coveredUntil) {
         stats.covered++;
         const hit = matchEvent(ev, index); const ticket = hit && toTicket(hit);
-        if (ticket) { ev.tickets = [ticket]; cache[ev.id] = { ...ticket, date: day }; stats.matched++; }
+        if (ticket) { ev.tickets = [ticket]; cache[ev.id] = { ...ticket, date: day }; stats.matched++; stats.matchedTmIds.add(`tm-${hit.id}`); }
         else delete cache[ev.id];
       } else if (cache[ev.id]) {
         const { date, ...ticket } = cache[ev.id];
