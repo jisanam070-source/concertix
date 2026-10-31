@@ -86,7 +86,8 @@ export async function mergeShows({ dataDir, shows, matchedIds = new Set(), today
   for (const m of metros) {
     const count = (m.events || []).filter(e => String(e.date).slice(0, 10) >= today).length;
     if (count === 0) { entries.delete(m.id); continue; }
-    entries.set(m.id, { id: m.id, slug: m.slug, name: m.name, country: m.country, count });
+    const music = (m.events || []).filter(e => String(e.date).slice(0, 10) >= today && e.genre !== "other").length;
+    entries.set(m.id, { id: m.id, slug: m.slug, name: m.name, country: m.country, count, music });
   }
   index.metros = [...entries.values()].sort((a, b) => b.count - a.count || a.id - b.id);
   await writeFile(join(dataDir, "index.json"), JSON.stringify(index));

@@ -41,6 +41,7 @@ test("mergeShows adds unmatched shows to the nearest metro and recounts the inde
   const m = read(join(dataDir, "metros", "1.json"));
   assert.deepEqual(m.events.map(e => e.id), ["sk-1", "sk-2", "tm-x", "tm-y"], "appended and still sorted by date");
   assert.equal(read(join(dataDir, "index.json")).metros[0].count, 4);
+  assert.equal(read(join(dataDir, "index.json")).metros[0].music, 2, "the two Songkick concerts; the added shows are genre other");
   assert.deepEqual(r, { added: 4 - 2, newMetros: 0, skippedMatched: 0, skippedPast: 0 });
 });
 
@@ -58,7 +59,7 @@ test("mergeShows creates a new city for shows far from every Songkick metro", as
   const m = read(join(dataDir, "metros", `${id}.json`));
   assert.equal(m.name, "Calgary, AB"); assert.equal(m.country, "US"); assert.equal(m.events.length, 2); assert.equal(m.source, "ticketmaster");
   const idx = read(join(dataDir, "index.json")).metros;
-  assert.deepEqual(idx.find(x => x.id === id), { id, slug: "calgary-ab", name: "Calgary, AB", country: "US", count: 2 });
+  assert.deepEqual(idx.find(x => x.id === id), { id, slug: "calgary-ab", name: "Calgary, AB", country: "US", count: 2, music: 0 });
   assert.equal(r.newMetros, 1);
 });
 

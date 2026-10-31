@@ -38,7 +38,12 @@ with sync_playwright() as p:
     check("no songkick links in grid view", pg.evaluate("[...document.querySelectorAll('a[href]')].filter(a=>/songkick\\.com/.test(a.href)).length") == 0)
     pg.click("#viewAgenda"); check("no songkick links in agenda view", pg.evaluate("[...document.querySelectorAll('a[href]')].filter(a=>/songkick\\.com/.test(a.href)).length") == 0); pg.click("#viewGrid")
     check("hero button opens an on-site event page", (pg.evaluate("document.querySelector('#stubBtn').getAttribute('href')") or "").startswith("#/event/"))
-    check("past events are hidden", pg.evaluate("document.querySelectorAll('article.card').length") == len(upcoming), f"{len(upcoming)} expected")
+    shown_text = pg.evaluate("document.querySelector('#resultCount').textContent")
+    check("past events are hidden (count in the summary line)", f"{len(upcoming):,}" in shown_text, f"{len(upcoming):,} expected; got {shown_text}")
+    check("only the first page of cards is drawn", 0 < pg.evaluate("document.querySelectorAll('#results article.card').length") <= 48)
+    if len(upcoming) > 48:
+        pg.click("#showMore"); pg.wait_for_function("document.querySelectorAll('#results article.card').length > 48")
+        check("Show more draws the next page", True)
     hero_title = pg.evaluate("document.querySelector('#stubTitle').textContent")
     hero_ev = next((e for e in upcoming if e["artist"] == hero_title), None)
     check("hero Next up is not a sports/comedy show when music exists", hero_ev is not None and (hero_ev["genre"] != "other" or all(e["genre"] == "other" for e in upcoming)), hero_title)
@@ -46,6 +51,7 @@ with sync_playwright() as p:
 
     # Card -> event page -> back
     target = "#results article.card:nth-child(10) .card-foot a"
+    pg.click("#viewGrid"); pg.wait_for_selector(target)
     pg.locator(target).scroll_into_view_if_needed(); y_before = pg.evaluate("scrollY")
     first = pg.evaluate("(s)=>{const a=document.querySelector(s); return {artist:a.closest('article').querySelector('h3').textContent, href:a.getAttribute('href'), label:a.textContent}}", target)
     check("card button is View details and links on-site", first["label"].strip() == "View details" and first["href"].startswith("#/event/"), first["href"])
@@ -60,7 +66,8 @@ with sync_playwright() as p:
     with pg.expect_download() as d: pg.click("#eventPage [data-ics]")
     check("add to calendar downloads a VEVENT", "BEGIN:VEVENT" in open(d.value.path()).read())
     pg.go_back(); pg.wait_for_selector("#shows:not([hidden]) article.card")
-    check("back restores the list scroll position", abs(pg.evaluate("scrollY") - y_before) < 150)
+    pg.wait_for_timeout(300)
+    check("back restores the list scroll position", abs(pg.evaluate("scrollY") - y_before) < 150, f"{pg.evaluate('scrollY')} vs {y_before}")
     direct = URL + ev["hash"]; pg2 = ctx.new_page(); pg2.goto(direct); pg2.wait_for_selector("#eventPage:not([hidden]) h1")
     check("direct link opens the event page", pg2.evaluate("document.querySelector('#eventPage h1').textContent") == first["artist"])
     pg2.goto(URL + f"#/event/{metro['id']}/sk-1"); pg2.wait_for_selector("#eventPage:not([hidden]) h1")

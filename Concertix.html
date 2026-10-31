@@ -304,6 +304,8 @@ footer{margin-top:clamp(40px,5vw,64px);background:var(--night);color:var(--night
 .card.skeleton{min-height:380px;background:linear-gradient(90deg,var(--surface-low) 25%,var(--surface) 50%,var(--surface-low) 75%);background-size:200% 100%;animation:shimmer 1.2s infinite linear}
 @keyframes shimmer{from{background-position:200% 0}to{background-position:-200% 0}}
 .card-foot .btn{padding:9px 16px;font-size:12.5px}
+.more-row{display:flex;justify-content:center;padding:28px 0 8px}
+.more-row .n{color:var(--muted);font-weight:500;margin-left:4px}
 .card h3 a:hover{color:var(--accent-text)}
 /* --- Event page --- */
 .ev{padding-block:clamp(24px,4vw,48px) 0}
@@ -566,7 +568,7 @@ function filtered(){
 function cardHTML(e,i){
   const g=GENRES[e.genre];
   return `<article class="card" style="animation-delay:${Math.min(i,8)*40}ms">
-    <div class="card-art">${artFor(e)}${e.image?`<img class="card-img" src="${esc(e.image)}" alt="" loading="lazy">`:""}
+    <div class="card-art">${e.image?`<img class="card-img" src="${esc(e.image)}" alt="" loading="lazy">`:artFor(e)}
       <div class="date-chip"><small>${fmtMon(e.d)}</small><b>${e.d.getDate()}</b></div>
       <button class="save" type="button" data-save="${e.id}" aria-pressed="${saved.has(e.id)}" aria-label="Save ${esc(e.artist)}"><span class="ms">favorite</span></button>
     </div>
@@ -589,16 +591,38 @@ function agendaHTML(list){
   </div>`).join("")+`</div>`).join("")+`</div>`;
 }
 const skeletonHTML = () => `<div class="grid">${Array.from({length:6},()=>`<article class="card skeleton" aria-hidden="true"></article>`).join("")}</div>`;
+const PAGE_SIZE = 48;
+let shown = PAGE_SIZE, lastList = [];
+const moreHTML_ = n => `<div class="more-row"><button class="btn btn-outline" type="button" id="showMore">Show more <span class="n">(${n.toLocaleString("en-US")} left)</span></button></div>`;
 function render(){
   renderPills();
   $("#genre").value=state.cat;
-  const list=filtered();
+  const list=filtered(); lastList=list; shown=PAGE_SIZE;
   const label = state.savedOnly ? " saved" : "";
   const where = currentMetro ? ` in <b>${esc(currentMetro.name)}</b>` : "";
-  $("#resultCount").innerHTML = `Showing <b>${list.length}</b>${label} of <b>${EVENTS.length}</b> shows${where}` + (state.savedOnly?` · <button type="button" id="clearSaved" style="border:0;background:none;color:var(--accent-text);font-weight:700;padding:0">Show all</button>`:"");
+  $("#resultCount").innerHTML = `Showing <b>${list.length.toLocaleString("en-US")}</b>${label} of <b>${EVENTS.length.toLocaleString("en-US")}</b> shows${where}` + (state.savedOnly?` · <button type="button" id="clearSaved" style="border:0;background:none;color:var(--accent-text);font-weight:700;padding:0">Show all</button>`:"");
   const out=$("#results");
   if(!list.length){ out.innerHTML=`<div class="empty"><h3>No shows match those filters</h3><p>Try another date range or genre, or clear everything to see every upcoming show in this city.</p><button class="btn btn-accent" type="button" id="resetAll">Clear filters</button></div>`; return; }
-  out.innerHTML = state.view==="grid" ? `<div class="grid">${list.map(cardHTML).join("")}</div>` : agendaHTML(list);
+  const page=list.slice(0,shown);
+  out.innerHTML = (state.view==="grid" ? `<div class="grid">${page.map(cardHTML).join("")}</div>` : agendaHTML(page)) + (list.length>shown ? moreHTML_(list.length-shown) : "");
+  watchMore();
+}
+function showMore(){
+  const from=shown; shown=Math.min(lastList.length, shown+PAGE_SIZE);
+  const out=$("#results"); const more=$("#showMore")?.closest(".more-row"); more?.remove();
+  if(state.view==="grid"){ out.querySelector(".grid")?.insertAdjacentHTML("beforeend", lastList.slice(from,shown).map((e,i)=>cardHTML(e,i)).join("")); }
+  else { out.innerHTML = agendaHTML(lastList.slice(0,shown)); } // agenda groups by month, so it is rebuilt
+  if(lastList.length>shown) out.insertAdjacentHTML("beforeend", moreHTML_(lastList.length-shown));
+  watchMore();
+}
+let moreObs=null;
+const AUTO_LOAD_LIMIT = 480; // load on scroll up to here, then only on a click, so the page never grows without end
+function watchMore(){
+  const btn=$("#showMore"); if(!btn) return;
+  if(!("IntersectionObserver" in window) || shown>=AUTO_LOAD_LIMIT) return;
+  moreObs?.disconnect();
+  moreObs=new IntersectionObserver(es=>{ if(es.some(x=>x.isIntersecting)) showMore(); },{rootMargin:"600px"});
+  moreObs.observe(btn);
 }
 
 /* ---------- city picker ---------- */
@@ -631,7 +655,8 @@ async function init(){
   try{ await indexReady; }catch(err){ console.error("loadIndex",err); loadError(); route(); return; }
   let savedId=null; try{ savedId=localStorage.getItem("concertix-metro"); }catch(_){}
   const r=parseRoute();
-  const m=(r && METROS.find(x=>x.id===r.metroId)) || METROS.find(x=>String(x.id)===savedId) || METROS[0];
+  const byMusic=[...METROS].sort((a,b)=>(b.music??b.count)-(a.music??a.count));
+  const m=(r && METROS.find(x=>x.id===r.metroId)) || METROS.find(x=>String(x.id)===savedId) || byMusic[0];
   if(m) selectMetro(m); else { $("#results").innerHTML=`<div class="empty"><h3>No shows yet</h3><p>The first crawl hasn't published any cities. Check back soon.</p></div>`; }
   route();
 }
@@ -826,9 +851,10 @@ document.addEventListener("click",e=>{
   else if(t.dataset.follow){ const a=t.dataset.follow; follows.has(a)?follows.delete(a):follows.add(a); try{localStorage.setItem("concertix-follows",JSON.stringify([...follows]))}catch(_){} t.setAttribute("aria-pressed",follows.has(a)); toast(follows.has(a)?"Following":"Unfollowed",a); }
   else if(t.dataset.toast){ toast("Coming soon",t.dataset.toast); }
   else if(t.id==="resetAll"||t.id==="clearSaved"){ Object.assign(state,{cat:"all",q:"",when:"all",savedOnly:false}); $("#q").value="";$("#when").value="all"; render(); }
+  else if(t.id==="showMore"){ showMore(); }
   else if(t.id==="savedToggle"){ state.savedOnly=!state.savedOnly; render(); $("#shows").scrollIntoView({behavior:"smooth"}); }
 });
-$("#q").addEventListener("input",e=>{state.q=e.target.value;render()});
+let qTimer; $("#q").addEventListener("input",e=>{ state.q=e.target.value; clearTimeout(qTimer); qTimer=setTimeout(render,150); });
 $("#when").addEventListener("change",e=>{state.when=e.target.value;render()});
 $("#genre").addEventListener("change",e=>{state.cat=e.target.value;render()});
 $("#sort").addEventListener("change",e=>{state.sort=e.target.value;render()});

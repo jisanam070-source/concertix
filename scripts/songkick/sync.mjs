@@ -32,6 +32,9 @@ async function readPrevious(outDir, id) {
   try { return JSON.parse(await readFile(join(outDir, "metros", `${id}.json`), "utf8")); } catch { return null; }
 }
 
+// Fields the site never reads are left out of the published files to keep them small.
+export const slimShow = ({ url, skGenres, ...rest }) => rest;
+
 export async function syncMetros({ metros, fetchText, outDir, today, concurrency = 4, log = () => {} }) {
   const metrosDir = join(outDir, "metros");
   await mkdir(metrosDir, { recursive: true });
@@ -44,8 +47,8 @@ export async function syncMetros({ metros, fetchText, outDir, today, concurrency
       ok++;
       if (events.length > 0) {
         const name = metroName || metro.slug; const country = events[0].venue.country || "";
-        await writeFile(join(metrosDir, `${metro.id}.json`), JSON.stringify({ id: metro.id, slug: metro.slug, name, country, updatedAt, events }));
-        indexEntries.push({ id: metro.id, slug: metro.slug, name, country, count: events.length });
+        await writeFile(join(metrosDir, `${metro.id}.json`), JSON.stringify({ id: metro.id, slug: metro.slug, name, country, updatedAt, events: events.map(slimShow) }));
+        indexEntries.push({ id: metro.id, slug: metro.slug, name, country, count: events.length, music: events.length });
         eventTotal += events.length;
       }
     } catch (e) {
@@ -55,7 +58,7 @@ export async function syncMetros({ metros, fetchText, outDir, today, concurrency
       const kept = (prev?.events || []).filter(e => String(e.date).slice(0, 10) >= today);
       if (kept.length) {
         await writeFile(join(metrosDir, `${metro.id}.json`), JSON.stringify({ ...prev, events: kept }));
-        indexEntries.push({ id: prev.id, slug: prev.slug, name: prev.name, country: prev.country, count: kept.length });
+        indexEntries.push({ id: prev.id, slug: prev.slug, name: prev.name, country: prev.country, count: kept.length, music: kept.filter(e => e.genre !== "other").length });
         eventTotal += kept.length;
       }
     }

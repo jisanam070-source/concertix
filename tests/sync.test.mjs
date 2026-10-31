@@ -50,9 +50,10 @@ test("skips metros with no events and writes index sorted by count", async () =>
   assert.equal(r.ok, 3); assert.equal(r.failed.length, 0); assert.equal(r.events, 3);
   assert.ok(!existsSync(join(out, "metros", "2.json")));
   const index = readJson(join(out, "index.json"));
-  assert.deepEqual(index.metros.map(m => [m.id, m.name, m.count]), [[3, "Cville", 2], [1, "Aville", 1]]);
+  assert.deepEqual(index.metros.map(m => [m.id, m.name, m.count, m.music]), [[3, "Cville", 2, 2], [1, "Aville", 1, 1]]);
   const f = readJson(join(out, "metros", "1.json"));
   assert.equal(f.name, "Aville"); assert.equal(f.country, "US"); assert.equal(f.slug, "a"); assert.equal(f.events.length, 1); assert.ok(f.updatedAt);
+  assert.equal(f.events[0].url, undefined, "published shows carry no Songkick url"); assert.equal(f.events[0].skGenres, undefined);
   assert.ok(existsSync(join(out, "summary.json")));
 });
 
@@ -66,7 +67,7 @@ test("keeps previous file for a failed metro and counts it in index", async () =
   assert.deepEqual(r.failed.map(f => f.id), [9]);
   assert.deepEqual(readJson(join(out, "metros", "9.json")), old);
   const index = readJson(join(out, "index.json"));
-  assert.deepEqual(index.metros[0], { id: 9, slug: "old", name: "Oldtown", country: "US", count: 4 });
+  assert.deepEqual(index.metros[0], { id: 9, slug: "old", name: "Oldtown", country: "US", count: 4, music: 4 });
 });
 
 test("throws when more than 20% of metros fail", async () => {

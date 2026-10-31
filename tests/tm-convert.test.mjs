@@ -31,11 +31,9 @@ test("tmToShow converts a sports event: title is the event name, no support act"
   assert.equal(s.artist, "Calgary Hitmen vs. Medicine Hat Tigers");
   assert.equal(s.support, "");
   assert.equal(s.genre, "other");
-  assert.deepEqual(s.skGenres, ["Sports", "Hockey"]);
   assert.equal(s.date, "2026-10-23T19:00:00");
   assert.deepEqual(s.venue, { name: "Scotiabank Saddledome", city: "Calgary", region: "AB", country: "CA", lat: 51.0385626, lng: -114.0524879 });
   assert.equal(s.image, "https://s1.ticketm.net/b.jpg", "widest 16:9 image at least 300px");
-  assert.equal(s.url, "https://www.ticketmaster.ca/x/event/110064FBA59A53F0");
   assert.equal(s.status, "scheduled");
   assert.equal(s.source, "ticketmaster");
   assert.deepEqual(s.tickets, [{ seller: "Ticketmaster", url: "https://www.ticketmaster.ca/x/event/110064FBA59A53F0", status: "onsale" }]);
@@ -56,6 +54,6 @@ test("tmToShow handles time TBA, cancelled and postponed statuses", () => {
 test("tmToShow returns null for add-ons, missing dates and non-https urls", () => {
   assert.equal(tmToShow(base({ name: "Parking: Flames vs Bruins" })), null);
   assert.equal(tmToShow(base({ dates: { start: {}, status: { code: "onsale" } } })), null);
-  assert.equal(tmToShow(base({ url: "http://insecure.example/x" })), null);
+  assert.equal(tmToShow(base({ url: "http://insecure.example/x" })), null, "no ticket link means no show");
   assert.equal(tmToShow(base({ id: "bad id/with*chars" })), null);
 });
