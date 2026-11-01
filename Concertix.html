@@ -304,6 +304,30 @@ footer{margin-top:clamp(40px,5vw,64px);background:var(--night);color:var(--night
 .card.skeleton{min-height:380px;background:linear-gradient(90deg,var(--surface-low) 25%,var(--surface) 50%,var(--surface-low) 75%);background-size:200% 100%;animation:shimmer 1.2s infinite linear}
 @keyframes shimmer{from{background-position:200% 0}to{background-position:-200% 0}}
 .card-foot .btn{padding:9px 16px;font-size:12.5px}
+/* --- Home: category rows --- */
+#home{padding-top:clamp(28px,4vw,48px)}
+.cat-row{margin-bottom:clamp(28px,4vw,44px)}
+.cat-head{display:flex;align-items:baseline;justify-content:space-between;gap:16px;margin-bottom:16px}
+.cat-head h2{font-size:clamp(22px,2.6vw,30px)}
+.cat-head a{font-size:14px;font-weight:700;color:var(--accent-text)}
+.cat-head a:hover{text-decoration:underline}
+.carousel{position:relative}
+.rail{display:flex;gap:18px;overflow-x:auto;scroll-snap-type:x mandatory;scroll-behavior:smooth;padding:4px 2px 12px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.rail::-webkit-scrollbar{display:none}
+.hcard{flex:0 0 212px;scroll-snap-align:start;min-width:0}
+.hcard-link{display:block;color:inherit}
+.hcard-img{position:relative;aspect-ratio:1;border-radius:18px;overflow:hidden;background:var(--surface);margin-bottom:10px;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.hcard-img img,.hcard-img svg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:transform .5s}
+.hcard:hover .hcard-img img,.hcard:hover .hcard-img svg{transform:scale(1.04)}
+.hcard .save{right:10px;top:10px;width:34px;height:34px}
+.hcard b{display:block;font-size:15px;font-weight:700;line-height:1.3;color:var(--ink);overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.hcard-when{display:block;font-size:13px;color:var(--ink-2);margin-top:3px}
+.hcard-near{display:block;font-size:13px;font-weight:700;color:var(--ink-2);margin-top:2px}
+.rail-btn{position:absolute;top:92px;width:40px;height:40px;border-radius:50%;border:1px solid var(--line);background:var(--bg);box-shadow:var(--shadow);display:grid;place-items:center;z-index:2}
+.rail-btn[data-dir="prev"]{left:-14px}.rail-btn[data-dir="next"]{right:-14px}
+.rail-btn:hover{background:var(--surface-low)}
+@media (max-width:720px){.hcard{flex-basis:160px}.rail-btn{display:none}.rail{gap:12px}}
+@media (pointer:coarse){.rail-btn{display:none}}
 .more-row{display:flex;justify-content:center;padding:28px 0 8px}
 .more-row .n{color:var(--muted);font-weight:500;margin-left:4px}
 .card h3 a:hover{color:var(--accent-text)}
@@ -355,9 +379,11 @@ footer{margin-top:clamp(40px,5vw,64px);background:var(--night);color:var(--night
       <span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 36 36" width="36" height="36"><path d="M27.5 9.2 A13 13 0 1 0 27.5 26.8" fill="none" stroke="var(--heading)" stroke-width="4.5" stroke-linecap="round"/><circle cx="29.5" cy="18" r="3.2" fill="#c25e1a"/></svg></span><span><span class="brand-name">Concerti<span class="bx">x</span></span><span class="brand-tag">Live Music &amp; Concerts</span></span>
     </a>
     <nav class="nav" aria-label="Main">
-      <a href="#shows" class="current">Concerts</a>
-      <a href="#shows">Festivals</a>
-      <a href="#tours">Artists</a>
+      <a href="#home" data-home class="current">Home</a>
+      <a href="#shows" data-explore="music">Concerts</a>
+      <a href="#shows" data-explore="sports">Sports</a>
+      <a href="#shows" data-explore="theatre">Theatre</a>
+      <a href="#shows" data-explore="comedy">Comedy</a>
     </nav>
     <div class="header-actions">
       <button class="btn btn-outline hide-sm" type="button" data-toast="Seller onboarding opens in November.">Sell Tickets</button>
@@ -409,10 +435,13 @@ footer{margin-top:clamp(40px,5vw,64px);background:var(--night);color:var(--night
     </div>
   </section>
 
-  <section class="block" id="shows">
+  <section class="block" id="home"><div class="wrap" id="homeRows"></div></section>
+
+  <section class="block" id="shows" hidden>
     <div class="wrap">
       <div class="section-head">
-        <div><span class="eyebrow">Upcoming shows</span><h2>On stage this season</h2></div>
+        <div><span class="eyebrow">Upcoming shows</span><h2 id="showsTitle">On stage this season</h2></div>
+        <a class="btn btn-outline" href="#home" data-home><span class="ms">arrow_back</span>Home</a>
       </div>
       <div class="toolbar">
         <p class="result-count" id="resultCount" aria-live="polite"></p>
@@ -487,7 +516,7 @@ const toDate = s => s.length===10 ? new Date(+s.slice(0,4), +s.slice(5,7)-1, +s.
 function setEvents(list){
   EVENTS = list.map(e=>({...e, d:toDate(e.date), v:e.venue}));
   byId = Object.fromEntries(EVENTS.map(e=>[e.id,e]));
-  render(); renderHero(); renderTours();
+  render(); renderHome(); renderHero(); renderTours(); applyMode();
 }
 
 /* ---------- generative poster art ---------- */
@@ -535,16 +564,36 @@ function persist(){ try{ localStorage.setItem("resonance-saved",JSON.stringify([
 function updateSavedCount(){ const c=$("#savedCount"); if(c){ c.textContent=saved.size; c.hidden=!saved.size; } }
 
 /* ---------- state ---------- */
-const state = {cat:"all",q:"",when:"all",sort:"date",view:"grid",savedOnly:false};
+const state = {cat:"all",q:"",when:"all",sort:"date",view:"grid",savedOnly:false,mode:"home",category:"all"};
+const CATS = [["music","Concerts"],["sports","Sports"],["theatre","Theatre"],["comedy","Comedy"],["other","More events"]];
+const CAT_LABEL = Object.fromEntries(CATS);
+const CAT_NOUN = {music:"concerts",sports:"sports events",theatre:"theatre shows",comedy:"comedy shows",other:"events",all:"shows"};
+// Songkick shows carry no category and are all concerts.
+const catOf = e => e.category || (e.genre==="other" ? "other" : "music");
+function applyMode(){
+  if(viewing==="event") return;
+  $("#home").hidden = state.mode!=="home";
+  $("#shows").hidden = state.mode!=="list";
+  document.querySelectorAll("nav.nav a").forEach(a=>a.classList.toggle("current", state.mode==="home" ? a.hasAttribute("data-home") : a.dataset.explore===state.category));
+}
+function goList(category, opts={}){
+  state.mode="list"; state.category=category||"all"; state.cat="all"; $("#genre").value="all";
+  if(opts.q!==undefined){ state.q=opts.q; $("#q").value=opts.q; }
+  applyMode(); render();
+  if(opts.scroll!==false) $("#shows").scrollIntoView({behavior:"smooth",block:"start"});
+}
+function goHome(){ state.mode="home"; state.q=""; $("#q").value=""; applyMode(); scrollTo({top:0,behavior:"smooth"}); }
 
 // genre select + pills
 $("#genre").innerHTML = `<option value="all">Genre: All Genres</option>` + Object.entries(GENRES).map(([k,g])=>`<option value="${k}">${esc(g.label)}</option>`).join("");
 // month options: the next six months
 { const now=new Date(); const opts=[]; for(let i=0;i<6;i++){ const d=new Date(now.getFullYear(),now.getMonth()+i,1); const label=d.toLocaleString("en-US",{month:"long"})+(d.getFullYear()!==now.getFullYear()?" "+d.getFullYear():""); opts.push(`<option value="${d.getMonth()}">${label}</option>`); } $("#when").insertAdjacentHTML("beforeend",opts.join("")); }
 function renderPills(){
-  const counts = {}; EVENTS.forEach(e=>counts[e.genre]=(counts[e.genre]||0)+1);
-  $("#pills").innerHTML = `<button type="button" class="pill" data-cat="all" aria-pressed="${state.cat==="all"}">All Shows <span class="n">(${EVENTS.length})</span></button>` +
-    Object.entries(GENRES).map(([k,g])=>`<button type="button" class="pill" data-cat="${k}" aria-pressed="${state.cat===k}"><span class="ms">${g.icon}</span>${esc(g.label)} <span class="n">${counts[k]||0}</span></button>`).join("");
+  const pool = EVENTS.filter(e=>state.category==="all"||catOf(e)===state.category);
+  const counts = {}; pool.forEach(e=>counts[e.genre]=(counts[e.genre]||0)+1);
+  $("#pills").hidden = !(state.category==="all"||state.category==="music");
+  $("#pills").innerHTML = `<button type="button" class="pill" data-cat="all" aria-pressed="${state.cat==="all"}">All Shows <span class="n">(${pool.length.toLocaleString("en-US")})</span></button>` +
+    Object.entries(GENRES).filter(([k])=>k!=="other"||state.category==="all").map(([k,g])=>`<button type="button" class="pill" data-cat="${k}" aria-pressed="${state.cat===k}"><span class="ms">${g.icon}</span>${esc(g.label)} <span class="n">${counts[k]||0}</span></button>`).join("");
 }
 
 function inRange(e){
@@ -557,6 +606,7 @@ function inRange(e){
 function filtered(){
   const q=state.q.toLowerCase().trim();
   let list=EVENTS.filter(e=>
+    (state.category==="all"||catOf(e)===state.category) &&
     (state.cat==="all"||e.genre===state.cat) &&
     (!state.savedOnly||saved.has(e.id)) &&
     inRange(e) &&
@@ -573,7 +623,7 @@ function cardHTML(e,i){
       <button class="save" type="button" data-save="${e.id}" aria-pressed="${saved.has(e.id)}" aria-label="Save ${esc(e.artist)}"><span class="ms">favorite</span></button>
     </div>
     <div class="card-body">
-      <span class="genre-tag">${esc(g.label)}</span>
+      <span class="genre-tag">${esc(catOf(e)==="music" ? g.label : CAT_LABEL[catOf(e)])}</span>
       <h3><a href="${eventHref(e)}">${esc(e.artist)}</a></h3>
       ${e.support?`<p class="support">${esc(e.support)}</p>`:""}
       <p class="where"><span class="ms">location_on</span>${esc(e.v.name)}${e.v.city?`, ${esc(e.v.city)}`:""}</p>
@@ -595,12 +645,15 @@ const PAGE_SIZE = 48;
 let shown = PAGE_SIZE, lastList = [];
 const moreHTML_ = n => `<div class="more-row"><button class="btn btn-outline" type="button" id="showMore">Show more <span class="n">(${n.toLocaleString("en-US")} left)</span></button></div>`;
 function render(){
+  if(state.mode!=="list"){ $("#results").innerHTML=""; return; } // the list is built only when it is on screen
   renderPills();
   $("#genre").value=state.cat;
   const list=filtered(); lastList=list; shown=PAGE_SIZE;
   const label = state.savedOnly ? " saved" : "";
   const where = currentMetro ? ` in <b>${esc(currentMetro.name)}</b>` : "";
-  $("#resultCount").innerHTML = `Showing <b>${list.length.toLocaleString("en-US")}</b>${label} of <b>${EVENTS.length.toLocaleString("en-US")}</b> shows${where}` + (state.savedOnly?` · <button type="button" id="clearSaved" style="border:0;background:none;color:var(--accent-text);font-weight:700;padding:0">Show all</button>`:"");
+  const pool = EVENTS.filter(e=>state.category==="all"||catOf(e)===state.category);
+  $("#showsTitle").textContent = state.category==="all" ? "On stage this season" : CAT_LABEL[state.category] + (currentMetro ? " in " + currentMetro.name : "");
+  $("#resultCount").innerHTML = `Showing <b>${list.length.toLocaleString("en-US")}</b>${label} of <b>${pool.length.toLocaleString("en-US")}</b> ${CAT_NOUN[state.category]||"shows"}${where}` + (state.savedOnly?` · <button type="button" id="clearSaved" style="border:0;background:none;color:var(--accent-text);font-weight:700;padding:0">Show all</button>`:"");
   const out=$("#results");
   if(!list.length){ out.innerHTML=`<div class="empty"><h3>No shows match those filters</h3><p>Try another date range or genre, or clear everything to see every upcoming show in this city.</p><button class="btn btn-accent" type="button" id="resetAll">Clear filters</button></div>`; return; }
   const page=list.slice(0,shown);
@@ -624,6 +677,47 @@ function watchMore(){
   moreObs=new IntersectionObserver(es=>{ if(es.some(x=>x.isIntersecting)) showMore(); },{rootMargin:"600px"});
   moreObs.observe(btn);
 }
+
+/* ---------- home rows ---------- */
+const HOME_ROW_MAX = 24;
+const fmtShort = d => `${d.toLocaleString("en-US",{weekday:"short"})}, ${d.getDate()} ${d.toLocaleString("en-US",{month:"short"})}${d.getFullYear()!==new Date().getFullYear()?" "+d.getFullYear():""}`;
+const fmtDM = d => `${d.getDate()} ${d.toLocaleString("en-US",{month:"short"})}${d.getFullYear()!==new Date().getFullYear()?" "+d.getFullYear():""}`;
+const fmt24 = d => `${pad2(d.getHours())}:${pad2(d.getMinutes())}`;
+function whenText(group){
+  const a=group.events[0], z=group.events[group.events.length-1];
+  if(group.events.length===1 || a.date.slice(0,10)===z.date.slice(0,10)) return `${fmtShort(a.d)} • ${a.date.length===10?"Time TBA":fmt24(a.d)}`;
+  return `${fmtDM(a.d)} - ${fmtDM(z.d)}`;
+}
+function homeGroups(cat){
+  const by=new Map();
+  for(const e of EVENTS){ if(catOf(e)!==cat || !isUpcoming(e) || e.status==="cancelled") continue; const k=e.artist.toLowerCase(); (by.get(k)||by.set(k,{title:e.artist,events:[]}).get(k)).events.push(e); }
+  const groups=[...by.values()];
+  for(const g of groups){ g.events.sort((x,y)=>x.date.localeCompare(y.date)); g.img=(g.events.find(e=>e.image)||{}).image||""; g.lead=g.events[0]; }
+  return groups.sort((x,y)=>y.events.length-x.events.length || x.events[0].date.localeCompare(y.events[0].date)).slice(0,HOME_ROW_MAX);
+}
+function hcardHTML(g){
+  const e=g.lead, n=g.events.length, city=currentMetro?currentMetro.name:e.v.city;
+  const href = n===1 ? eventHref(e) : "#shows";
+  return `<article class="hcard"><a class="hcard-link" href="${href}" ${n>1?`data-act="${esc(g.title)}" data-act-cat="${catOf(e)}"`:""}>
+    <div class="hcard-img">${g.img?`<img src="${esc(g.img)}" alt="" loading="lazy">`:artFor(e)}<button class="save" type="button" data-save="${e.id}" aria-pressed="${saved.has(e.id)}" aria-label="Save ${esc(g.title)}"><span class="ms">favorite</span></button></div>
+    <b>${esc(g.title)}</b><span class="hcard-when">${esc(whenText(g))}</span><span class="hcard-near">${n.toLocaleString("en-US")} show${n===1?"":"s"} in ${esc(city)}</span></a></article>`;
+}
+function renderHome(){
+  const rows=CATS.map(([cat,label])=>{ const groups=homeGroups(cat); if(!groups.length) return ""; return `<section class="cat-row" data-cat="${cat}">
+    <div class="cat-head"><h2>${label}</h2><a href="#shows" data-explore="${cat}">Explore ${label}</a></div>
+    <div class="carousel"><button class="rail-btn" type="button" data-dir="prev" aria-label="Scroll left"><span class="ms">chevron_left</span></button>
+      <div class="rail">${groups.map(hcardHTML).join("")}</div>
+      <button class="rail-btn" type="button" data-dir="next" aria-label="Scroll right"><span class="ms">chevron_right</span></button></div></section>`; }).join("");
+  $("#homeRows").innerHTML = rows || `<div class="empty"><h3>No upcoming shows here yet</h3><p>Pick another city above.</p></div>`;
+}
+document.addEventListener("click",e=>{
+  const a=e.target.closest("a[data-explore],a[data-home],a[data-act]"); if(!a) return;
+  if(e.target.closest("button")) return;
+  e.preventDefault();
+  if(a.hasAttribute("data-home")) goHome();
+  else if(a.dataset.act!==undefined) goList(a.dataset.actCat||"all",{q:a.dataset.act});
+  else goList(a.dataset.explore);
+});
 
 /* ---------- city picker ---------- */
 async function loadIndex(){
@@ -700,7 +794,7 @@ setInterval(tick,1000);
 
 /* ---------- event page ---------- */
 const BASE_TITLE = document.title;
-const LIST_SECTIONS = () => [document.querySelector(".hero"), $("#shows"), $("#tours")];
+const LIST_SECTIONS = () => [document.querySelector(".hero"), $("#home"), $("#shows"), $("#tours")];
 let viewing = "list", listScrollY = 0, listHash = "";
 if ("scrollRestoration" in history) history.scrollRestoration = "manual";
 function parseRoute(){ const m=location.hash.match(/^#\/event\/(\d+)\/((?:sk|tm)-[A-Za-z0-9_-]+)$/); return m ? { metroId:+m[1], eventId:m[2] } : null; }
@@ -781,6 +875,7 @@ function setView(view){
   ev.hidden = view!=="event";
   if(view!=="event") ev.innerHTML=""; // drop the old page so its images and cards are not kept around
   viewing=view;
+  applyMode();
 }
 async function showEvent(r){
   setView("event"); scrollTo(0,0);
@@ -841,12 +936,12 @@ let tt; function toast(title,msg){ $("#toastTitle").textContent=title; $("#toast
 /* ---------- events ---------- */
 document.addEventListener("click",e=>{
   const t=e.target.closest("button"); if(!t) return;
-  if(t.dataset.cat){ state.cat=t.dataset.cat; render(); }
+  if(t.dataset.cat){ state.cat=t.dataset.cat; toList(); render(); }
   else if(t.dataset.metro){ const m=METROS.find(x=>String(x.id)===t.dataset.metro); if(m) selectMetro(m); }
   else if(t.dataset.ics){ const ev=byId[t.dataset.ics]; if(ev) downloadIcs(ev); }
   else if(t.hasAttribute("data-copy-link")){ copyLink(); }
   else if(t.id==="retryLoad"){ currentMetro ? loadMetro(currentMetro.id) : init(); }
-  else if(t.dataset.save || t.dataset.saveSpot){ const id=t.dataset.save||t.dataset.saveSpot; saved.has(id)?saved.delete(id):saved.add(id); persist(); if(t.dataset.save) t.setAttribute("aria-pressed",saved.has(id)); if(state.savedOnly) render(); }
+  else if(t.dataset.save || t.dataset.saveSpot){ if(t.closest("a")) e.preventDefault(); const id=t.dataset.save||t.dataset.saveSpot; saved.has(id)?saved.delete(id):saved.add(id); persist(); if(t.dataset.save) t.setAttribute("aria-pressed",saved.has(id)); if(state.savedOnly) render(); }
   else if(t.dataset.artist){ state.q=t.dataset.artist; $("#q").value=state.q; state.cat="all"; state.when="all"; $("#when").value="all"; render(); $("#shows").scrollIntoView({behavior:"smooth"}); }
   else if(t.dataset.follow){ const a=t.dataset.follow; follows.has(a)?follows.delete(a):follows.add(a); try{localStorage.setItem("concertix-follows",JSON.stringify([...follows]))}catch(_){} t.setAttribute("aria-pressed",follows.has(a)); toast(follows.has(a)?"Following":"Unfollowed",a); }
   else if(t.dataset.toast){ toast("Coming soon",t.dataset.toast); }
@@ -854,10 +949,12 @@ document.addEventListener("click",e=>{
   else if(t.id==="showMore"){ showMore(); }
   else if(t.id==="savedToggle"){ state.savedOnly=!state.savedOnly; render(); $("#shows").scrollIntoView({behavior:"smooth"}); }
 });
-let qTimer; $("#q").addEventListener("input",e=>{ state.q=e.target.value; clearTimeout(qTimer); qTimer=setTimeout(render,150); });
-$("#when").addEventListener("change",e=>{state.when=e.target.value;render()});
-$("#genre").addEventListener("change",e=>{state.cat=e.target.value;render()});
+const toList = () => { if(state.mode!=="list"){ state.mode="list"; applyMode(); } };
+let qTimer; $("#q").addEventListener("input",e=>{ state.q=e.target.value; clearTimeout(qTimer); qTimer=setTimeout(()=>{ if(state.q.trim()) toList(); render(); },150); });
+$("#when").addEventListener("change",e=>{state.when=e.target.value;toList();render()});
+$("#genre").addEventListener("change",e=>{state.cat=e.target.value;toList();render()});
 $("#sort").addEventListener("change",e=>{state.sort=e.target.value;render()});
+document.addEventListener("click",e=>{ const b=e.target.closest(".rail-btn"); if(!b) return; const rail=b.parentElement.querySelector(".rail"); rail.scrollBy({left:(b.dataset.dir==="next"?1:-1)*(rail.clientWidth-120),behavior:"smooth"}); });
 $("#viewGrid").onclick=()=>{state.view="grid";$("#viewGrid").setAttribute("aria-pressed","true");$("#viewAgenda").setAttribute("aria-pressed","false");render()};
 $("#viewAgenda").onclick=()=>{state.view="agenda";$("#viewAgenda").setAttribute("aria-pressed","true");$("#viewGrid").setAttribute("aria-pressed","false");render()};
 $("#newsForm").addEventListener("submit",e=>{e.preventDefault();toast("Subscribed","Pre-sale codes will land in your inbox before general sale.");e.target.reset();});

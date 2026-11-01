@@ -8,6 +8,16 @@ const MUSIC_GENRES = [
 const STATUS = { cancelled: "cancelled", canceled: "cancelled", postponed: "postponed", rescheduled: "postponed" };
 const SAFE_ID = /^[A-Za-z0-9_-]+$/;
 
+// Coarse category for the home page rows. Songkick shows have no category and count as music.
+export function tmCategory(classifications) {
+  const c = (classifications || []).find(x => x.primary) || (classifications || [])[0];
+  const seg = c?.segment?.name || "", genre = c?.genre?.name || "";
+  if (seg === "Music") return "music";
+  if (seg === "Sports") return "sports";
+  if (seg === "Arts & Theatre") return /comedy/i.test(genre) ? "comedy" : "theatre";
+  return "other";
+}
+
 export function tmGenre(classifications) {
   const c = (classifications || []).find(x => x.primary) || (classifications || [])[0];
   if (!c) return "other";
@@ -41,6 +51,7 @@ export function tmToShow(e) {
     artist: music ? acts[0] : (e.name || acts[0] || "Event"),
     support: music && acts.length > 1 ? `with ${acts.slice(1).join(", ")}` : "",
     genre: tmGenre(e.classifications),
+    category: tmCategory(e.classifications),
     venue: { name: v.name || "", city: v.city?.name || "", region: v.state?.stateCode || "", country: v.country?.countryCode || "", lat: num(v.location?.latitude), lng: num(v.location?.longitude) },
     date: start.localTime && !start.timeTBA && !start.noSpecificTime ? `${start.localDate}T${start.localTime.slice(0, 8)}` : start.localDate,
     image: bestImage(e.images),

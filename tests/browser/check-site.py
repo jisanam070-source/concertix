@@ -26,9 +26,10 @@ with sync_playwright() as p:
     b = p.chromium.launch(); ctx = b.new_context(viewport={"width": 1280, "height": 900}, accept_downloads=True); pg = ctx.new_page()
     errors = []; pg.on("pageerror", lambda e: errors.append("PAGEERROR " + str(e)))
     pg.on("console", lambda m: errors.append(m.text) if m.type == "error" and "404" not in m.text and "loadMetro" not in m.text else None)
-    pg.goto(URL); pg.evaluate("localStorage.clear()"); pg.goto(URL); pg.wait_for_selector("article.card:not(.skeleton)")
+    pg.goto(URL); pg.evaluate("localStorage.clear()"); pg.goto(URL); pg.wait_for_selector("#home .hcard")
+    pg.click("nav a[data-explore='music']"); pg.wait_for_selector("#results article.card:not(.skeleton)")  # the list view, filtered to concerts
     today = today_js(pg)
-    upcoming = [e for e in events if e["date"][:10] >= today]
+    upcoming = [e for e in events if e["date"][:10] >= today and (e.get("category") or ("other" if e.get("genre") == "other" else "music")) == "music"]
     with_ticket = next((e for e in upcoming if e.get("tickets")), None)
     without_ticket = next((e for e in upcoming if not e.get("tickets")), None)
     tm_only = next((e for e in upcoming if e.get("source") == "ticketmaster"), None)
@@ -39,7 +40,7 @@ with sync_playwright() as p:
     pg.click("#viewAgenda"); check("no songkick links in agenda view", pg.evaluate("[...document.querySelectorAll('a[href]')].filter(a=>/songkick\\.com/.test(a.href)).length") == 0); pg.click("#viewGrid")
     check("hero button opens an on-site event page", (pg.evaluate("document.querySelector('#stubBtn').getAttribute('href')") or "").startswith("#/event/"))
     shown_text = pg.evaluate("document.querySelector('#resultCount').textContent")
-    check("past events are hidden (count in the summary line)", f"{len(upcoming):,}" in shown_text, f"{len(upcoming):,} expected; got {shown_text}")
+    check("past events are hidden (concert count in the summary line)", f"{len(upcoming):,}" in shown_text, f"{len(upcoming):,} expected; got {shown_text}")
     check("only the first page of cards is drawn", 0 < pg.evaluate("document.querySelectorAll('#results article.card').length") <= 48)
     if len(upcoming) > 48:
         pg.click("#showMore"); pg.wait_for_function("document.querySelectorAll('#results article.card').length > 48")
@@ -92,6 +93,7 @@ with sync_playwright() as p:
     pg.fill("#metroQ", other["name"][:6]); pg.wait_for_selector("#metroList:not([hidden]) .metro-opt"); pg.click(f".metro-opt[data-metro='{other['id']}']")
     pg.wait_for_selector("#retryLoad"); check("missing city file shows the error state", True)
     pg.unroute("**/metros/*.json"); pg.click("#retryLoad")
+    pg.wait_for_timeout(500); pg.evaluate("document.querySelector('#shows').hidden && document.querySelector(\"nav a[data-explore='music']\").click()")
     try: pg.wait_for_selector("#results article.card:not(.skeleton)", timeout=20000); recovered = True
     except Exception: recovered = False
     check("retry recovers", recovered and other["name"] in pg.evaluate("document.querySelector('#resultCount').textContent"), pg.evaluate("document.querySelector('#resultCount').textContent + ' | ' + document.querySelector('#results').innerText.slice(0,80)"))

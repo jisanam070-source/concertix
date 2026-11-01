@@ -57,3 +57,21 @@ test("tmToShow returns null for add-ons, missing dates and non-https urls", () =
   assert.equal(tmToShow(base({ url: "http://insecure.example/x" })), null, "no ticket link means no show");
   assert.equal(tmToShow(base({ id: "bad id/with*chars" })), null);
 });
+
+import { tmCategory } from "../scripts/ticketmaster/convert.mjs";
+test("tmCategory sorts events into concerts, sports, theatre, comedy or other", () => {
+  const c = (segment, genre) => tmCategory([{ primary: true, segment: { name: segment }, genre: { name: genre } }]);
+  assert.equal(c("Music", "Rock"), "music");
+  assert.equal(c("Sports", "Hockey"), "sports");
+  assert.equal(c("Arts & Theatre", "Theatre"), "theatre");
+  assert.equal(c("Arts & Theatre", "Comedy"), "comedy");
+  assert.equal(c("Arts & Theatre", "Musical"), "theatre");
+  assert.equal(c("Film", "Family"), "other");
+  assert.equal(c("Miscellaneous", "Undefined"), "other");
+  assert.equal(tmCategory(undefined), "other");
+});
+
+test("tmToShow records the category", () => {
+  assert.equal(tmToShow(base()).category, "sports");
+  assert.equal(tmToShow(base({ classifications: [{ primary: true, segment: { name: "Arts & Theatre" }, genre: { name: "Comedy" } }] })).category, "comedy");
+});
